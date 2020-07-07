@@ -15,7 +15,9 @@ Xiangjie Li (u1292552), Yuhui Zhang(u1271690)
 ### Project milestones
 
 Aug - Sept. : Learning Go, Kubernetes, Kafka and APIs
+
 Oct : building microservices as backend
+
 Nov: building frontend client using React
 
 ### The proposed mentor
