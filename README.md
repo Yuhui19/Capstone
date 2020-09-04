@@ -1,4 +1,5 @@
-# Capstone Project Proposal
+# Capstone Project Proposal 
+(expected Dec. 2020)
 
 Xiangjie Li ( u1292552 ), Yuhui Zhang ( u1271690 )
 
