@@ -1,7 +1,7 @@
 # Capstone Project Proposal 
 (expected Dec. 2020)
 
-Xiangjie Li ( u1292552 ), Yuhui Zhang ( u1271690 )
+Xiangjie(Jack) Li ( u1292552 ), Yuhui Zhang ( u1271690 )
 
 ### A description of the project(s) and the final deliverables
 
