@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobs-depl
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: jobs
+  template:
+    metadata:
+      labels:
+        app: jobs
+    spec:
+      containers:
+        - name: jobs
+          image: xiangjieli/jobs
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jobs-srv
+spec:
+  selector:
+    app: jobs
+  ports:
+    - name: jobs
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
