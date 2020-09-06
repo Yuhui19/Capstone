@@ -1,5 +1,6 @@
-FROM node:alpine
+FROM golang:1.14
 
 WORKDIR /app
 COPY . .
-CMD ["go","run","./app/main.go"]
+RUN go get -u github.com/gin-gonic/gin
+CMD ["go","run","main.go"]
