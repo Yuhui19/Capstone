@@ -106,21 +106,21 @@ server.listen(port, hostname, () => {
 //         limit: 10
 //       }
 //     }),
-//     scraper.run("software grad", "United States", {
-//       paginationMax: 2
-//     }),
-//     scraper.run("software college", "United States", {
-//       paginationMax: 2
-//     }),
-//     scraper.run("software university", "United States", {
-//       paginationMax: 2
-//     }),
-//     scraper.run("entry software", "United States", {
-//       paginationMax: 2
-//     }),
-//     scraper.run("junior developer", "United States", {
-//       paginationMax: 2
-//     })
+//     // scraper.run("software grad", "United States", {
+//     //   paginationMax: 2
+//     // }),
+//     // scraper.run("software college", "United States", {
+//     //   paginationMax: 2
+//     // }),
+//     // scraper.run("software university", "United States", {
+//     //   paginationMax: 2
+//     // }),
+//     // scraper.run("entry software", "United States", {
+//     //   paginationMax: 2
+//     // }),
+//     // scraper.run("junior developer", "United States", {
+//     //   paginationMax: 2
+//     // })
 //   ]);
 
 //   // Close browser
