@@ -6,7 +6,6 @@ import './bootstrap.min.css'
 import Button from '@material-ui/core/Button';
 import info from './linkedin_output.json'
 
-
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
 import Card from '@material-ui/core/Card';
@@ -22,61 +21,17 @@ import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import {Menu} from "@material-ui/icons";
 
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
-
-const jobs = [
-    {
-        query:"software graduate",
-        location:"Worldwide",
-        title:"Software Engineer - University Graduate",
-        company:"PayPal",
-        place:"San Francisco, CA",
-        date:"2020-08-11",
-        link:"https://www.linkedin.com/jobs/view/software-engineer-university-graduate-at-paypal-2147928361?refId=83056685-7469-40b3-97ea-ce0896d856a9&position=1&pageNum=0&trk=public_jobs_job-result-card_result-card_full-click",
-        senorityLevel:"Not Applicable",
-        function:"Engineering, Information Technology",
-        employmentType:"Full-time",
-        industries:"Computer Software, Financial Services, Internet"
-    },
-    {
-        query:"software graduate",
-        location:"Worldwide",
-        title:"Software Engineer- (Graduate Program)",
-        company:"Amdocs",
-        place:"Plano, TX",
-        date:"2020-07-22",
-        link:"https://www.linkedin.com/jobs/view/software-engineer-graduate-program-at-amdocs-1993073833?refId=83056685-7469-40b3-97ea-ce0896d856a9&position=2&pageNum=0&trk=public_jobs_job-result-card_result-card_full-click",
-        senorityLevel:"Entry level",
-        function:"Engineering, Information Technology",
-        employmentType:"Internship",
-        industries:"Information Technology and Services, Computer Software, Telecommunications"
-    }
-];
+import UserSignIn from "./UserSignIn";
+import { Router, Route, browserHistory, IndexRoute } from 'react-router'
+import SignIn from "./UserSignIn";
+import {BrowserRouter} from "react-router-dom";
 
 function Copyright() {
     return (
         <Typography variant="body2" color="textSecondary" align="center">
             {'Copyright © '}
-            <Link color="inherit" href="https://material-ui.com/">
+            {/*<Link color="inherit" href="https://material-ui.com/">*/}
+            <Link color="inherit" href="https://github.com/Yuhui19?tab=repositories">
                 TechCareer Hub
             </Link>{' '}
             {new Date().getFullYear()}
@@ -123,31 +78,38 @@ const useStyles = makeStyles((theme) => ({
     button: {
         variant: "contained",
         color: "primary",
+        // color: "#20c997",
         justifyContent: 'flex-end'
     }
 }));
 
-function Turn(props) {
-    // return <div className="row turn" style={{backgroundColor : "white"}}>
-    //     <div className="col-4 offset-1">
-    //         <img src={job.imageUrl} className="companyImage" alt="Company"/>
-    //     </div>
-    //     <div className="col-6 offset-1">
-    //         {job.query}
-    //     </div>
-    // </div>
-    var index = props.index;
-    return <CardContent className={useStyles().cardContent}>
-        <Typography gutterBottom variant="h5" component="h2" >
-            {/*{jobs[0].title}*/}
-            {info.data[index].title}
-        </Typography>
-        <Typography>{info.data[index].company}</Typography>
-        <Typography>{info.data[index].place}</Typography>
-        {/*<Typography>{info.data[0].date}</Typography>*/}
-        <Typography>{info.data[index].employmentType}</Typography>
+function CardsLayout(props) {
+    var index = props.num;
+    return <Grid item xs={12} sm={6} md={4}>
+        <Card className={useStyles().card}>
+            <CardActions>
+                <CardMedia
+                    className={useStyles().cardMedia}
+                    image="images/google.png"
+                    title="Image title"
+                />
+            </CardActions>
+                <CardContent className={useStyles().cardContent}>
+                    <Typography gutterBottom variant="h5" component="h2">
+                        {info.data[index].title}
+                    </Typography>
+                    <Typography>{info.data[index].company}</Typography>
+                    <Typography>{info.data[index].place}</Typography>
+                    <Typography>{info.data[index].employmentType}</Typography>
 
-    </CardContent>
+                </CardContent>
+            <CardActions>
+                <Button variant="contained" color="primary" style={{ marginLeft: "auto" }} onClick={()=>window.location.href=info.data[index].link}>
+                    Apply now!
+                </Button>
+            </CardActions>
+        </Card>
+    </Grid>
 }
 
 function App() {
@@ -161,6 +123,20 @@ function App() {
                     <Typography variant="h6" color="inherit" noWrap>
                         {/*TechCareer Hub*/}
                     </Typography>
+                    <Grid container spacing={2} justify="flex-end">
+                        <Grid item>
+                            <Button variant="contained" color="primary" href="/UserSignUp">
+                                Sign up
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            {/*<Link to="/UserSignIn">*/}
+                            <Button variant="contained" color="primary" href="/UserSignIn">
+                                    Sign in
+                            </Button>
+                            {/*</Link>*/}
+                        </Grid>
+                    </Grid>
                 </Toolbar>
             </AppBar>
             <main>
@@ -194,100 +170,39 @@ function App() {
 
                     {/*first line of grid*/}
                     <Grid container spacing={4}>
-                        {/*{cards.map((card) => (*/}
-                            <Grid item xs={12} sm={6} md={4}>
-                                <Card className={classes.card}>
-                                    <CardActions>
-                                        <CardMedia
-                                            className={classes.cardMedia}
-                                            image="images/google.png"
-                                            title="Image title"
-                                        />
-                                            {/*<Button variant="contained" color="primary" style={{ marginLeft: "auto" }}>*/}
-                                            {/*    Save*/}
-                                            {/*</Button>*/}
-                                    </CardActions>
-                                    <Turn index={0} />
-                                    <CardActions>
-                                        <Button variant="contained" color="primary" style={{ marginLeft: "auto" }}>
-                                            Apply now!
-                                        </Button>
-                                    </CardActions>
-                                </Card>
-                            </Grid>
-
+                        {/*first grid in first line*/}
+                        <CardsLayout num={0}/>
                         {/*second grid in first line*/}
-                        <Grid item xs={12} sm={6} md={4}>
-                            <Card className={classes.card}>
-                                <CardActions>
-                                    <CardMedia
-                                        className={classes.cardMedia}
-                                        image="images/facebook.png"
-                                        title="Image title"
-                                    />
-                                </CardActions>
-                                <Turn index={1} />
-                                <CardActions>
-                                    <Button variant="contained" color="primary" style={{ marginLeft: "auto" }}>
-                                        Apply now!
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-
+                        <CardsLayout num={1}/>
                         {/*third grid in first line*/}
-                        <Grid item xs={12} sm={6} md={4}>
-                            <Card className={classes.card}>
-                                <CardActions>
-                                    <CardMedia
-                                        className={classes.cardMedia}
-                                        image="images/microsoft.jpg"
-                                        title="Image title"
-                                    />
-                                </CardActions>
-                                <Turn index={2} />
-                                <CardActions>
-                                    <Button variant="contained" color="primary" style={{ marginLeft: "auto" }}>
-                                        Apply now!
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-
+                        <CardsLayout num={2}/>
                     </Grid>
 
                     {/*second line of grid*/}
                     <Grid container spacing={4}>
                         {/*{cards.map((card) => (*/}
-                        <Grid item xs={12} sm={6} md={4}>
-                            <Card className={classes.card}>
-                                <CardActions>
-                                    <CardMedia
-                                        className={classes.cardMedia}
-                                        image="images/amazon.jpg"
-                                        title="Image title"
-                                    />
-                                </CardActions>
-                                <Turn index={3} />
-                                <CardActions>
-                                    <Button variant="contained" color="primary" style={{ marginLeft: "auto" }}>
-                                        Apply now!
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
+                        <CardsLayout num={3}/>
+                        <CardsLayout num={4}/>
+                        <CardsLayout num={5}/>
+                    </Grid>
+
+                    <Grid container spacing={4}>
+                        {/*{cards.map((card) => (*/}
+                        <CardsLayout num={6}/>
+                        <CardsLayout num={7}/>
+                        <CardsLayout num={8}/>
                     </Grid>
 
                 </Container>
             </main>
             {/* Footer */}
             <footer className={classes.footer}>
-                <Typography variant="h6" align="center" gutterBottom>
-                    {/*Footer*/}
-                </Typography>
-                <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-                    {/*Something here to give the footer a purpose!*/}
-                </Typography>
+                {/*<Typography variant="h6" align="center" gutterBottom>*/}
+                {/*    Footer*/}
+                {/*</Typography>*/}
+                {/*<Typography variant="subtitle1" align="center" color="textSecondary" component="p">*/}
+                {/*    /!*Something here to give the footer a purpose!*!/*/}
+                {/*</Typography>*/}
                 <Copyright />
             </footer>
             {/* End footer */}
