@@ -2,37 +2,23 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
-
-const jobs = [
-    {
-        query:"software graduate",
-        location:"Worldwide",
-        title:"Software Engineer - University Graduate",
-        company:"PayPal","place":"San Francisco, CA",
-        date:"2020-08-11",
-        link:"https://www.linkedin.com/jobs/view/software-engineer-university-graduate-at-paypal-2147928361?refId=83056685-7469-40b3-97ea-ce0896d856a9&position=1&pageNum=0&trk=public_jobs_job-result-card_result-card_full-click",
-        senorityLevel:"Not Applicable",
-        function:"Engineering, Information Technology",
-        employmentType:"Full-time",
-        industries:"Computer Software, Financial Services, Internet",
-        imageUrl:"images/google.png"
-    }
-];
-
-const state = {
-    turnData : {
-        job : jobs[0],
-        location : jobs[0].location,
-        title : jobs[0].title
-    }
-};
+import UserSignIn from './UserSignIn'
+import UserSignUp from "./UserSignUp"
+import * as serviceWorker from './serviceWorker'
+import { Router, Route, browserHistory, IndexRoute, BrowserRouter } from 'react-router-dom'
+import {RoundedCorner, VerifiedUserSharp} from "@material-ui/icons";
 
 function render() {
     ReactDOM.render(
-        <React.StrictMode>
-            <App {...state}/>
-        </React.StrictMode>,
+        // <React.StrictMode>
+        <BrowserRouter>
+            <React.Fragment>
+                <Route exact path="/" component={App}/>
+                <Route path="/UserSignIn" component={UserSignIn}/>
+                <Route path="/UserSignUp" component={UserSignUp}/>
+            </React.Fragment>
+        </BrowserRouter>,
+        // </React.StrictMode>,
         document.getElementById('root')
     );
 }
