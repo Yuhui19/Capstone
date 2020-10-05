@@ -9,26 +9,29 @@ const server = http.createServer((req, res) => {
   res.send('Hello World');
 });
 
+
+// create Kafka instance and configure this instance
 const kafka = new Kafka({
   clientId: 'my-app',
   brokers: ['kaf1-srv:9092']
 })
 
+// create a producer client instance
 const producer = kafka.producer()
 
 // server.listen(port, hostname, () => {
 //   console.log(`Server running at http://${hostname}:${port}/`);
 // });
 
-// const run = async () => {
-//   // Producing
-//   await producer.connect()
-//   await producer.send({
-//     topic: 'test-topic',
-//     messages: [
-//       { value: 'Hello KafkaJS user!' },
-//     ],
-//   })
+const run = async () => {
+  // Producing
+  await producer.connect()
+  // await producer.send({
+  //   topic: 'test-topic',
+  //   messages: [
+  //     { value: 'Hello KafkaJS user!' },
+  //   ],
+  // })
  
   // Consuming
   // await consumer.connect()
@@ -43,14 +46,9 @@ const producer = kafka.producer()
   //     })
   //   },
   // })
-// }
+}
  
 // run().catch(console.error)
-
-
-
-
-
 
 
 
@@ -122,12 +120,14 @@ const { LinkedinScraper, events } = require("linkedin-jobs-scraper");
 
     let time = '{"time" : ' + '"' + new Date().toLocaleString() + '",';
     await producer.connect()
+    console.log("producer connect to kafka");
     await producer.send({
       topic: 'test-topic',
       messages: [
         { value: time + '"data" : ' + JSON.stringify(res.table) + "}" },
       ],
     })
+    console.log("producer sends message to kafka");
 
   });
 
@@ -173,6 +173,12 @@ const { LinkedinScraper, events } = require("linkedin-jobs-scraper");
   // Close browser
   await scraper.close();
 })();
+
+// scrape();
+
+// var interval = setInterval(scrape, 20000);
+
+
 
 
 

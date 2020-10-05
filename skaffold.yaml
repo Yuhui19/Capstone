@@ -8,14 +8,6 @@ build:
   local:
     push: false
   artifacts:
-    - image: xiangjieli/jobs
-      context: jobs
-      docker:
-        dockerfile: Dockerfile
-      sync:
-        manual:
-          - src: '*.go'
-            dest: .
     - image: xiangjieli/scraper
       context: scraper
       docker:
@@ -23,4 +15,12 @@ build:
       sync:
         manual:
           - src: '*.js'
+            dest: .
+    - image: xiangjieli/jobs
+      context: jobs
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.go'
             dest: .
