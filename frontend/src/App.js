@@ -113,13 +113,13 @@ function CardsLayout(props) {
 }
 
 function App() {
-    const classes = useStyles();
+    // const classes = useStyles();
     return (
         <React.Fragment>
             <CssBaseline />
             <AppBar position="relative">
                 <Toolbar>
-                    <Menu className={classes.icon}/>
+                    <Menu className={useStyles().icon}/>
                     <Typography variant="h6" color="inherit" noWrap>
                         {/*TechCareer Hub*/}
                     </Typography>
@@ -141,7 +141,7 @@ function App() {
             </AppBar>
             <main>
                 {/* Hero unit */}
-                <div className={classes.heroContent}>
+                <div className={useStyles().heroContent}>
                     <Container maxWidth="sm">
                         <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
                             TechCareer Hub
@@ -149,7 +149,7 @@ function App() {
                         <Typography variant="h5" align="center" color="textSecondary" paragraph>
                             All opportunities for you to start your career.
                         </Typography>
-                        <div className={classes.heroButtons}>
+                        <div className={useStyles().heroButtons}>
                             <Grid container spacing={2} justify="center">
                                 <Grid item>
                                     <Button variant="contained" color="primary">
@@ -165,7 +165,7 @@ function App() {
                         </div>
                     </Container>
                 </div>
-                <Container className={classes.cardGrid} maxWidth="md">
+                <Container className={useStyles().cardGrid} maxWidth="md">
                     {/* End hero unit */}
 
                     {/*first line of grid*/}
@@ -196,7 +196,7 @@ function App() {
                 </Container>
             </main>
             {/* Footer */}
-            <footer className={classes.footer}>
+            <footer className={useStyles().footer}>
                 {/*<Typography variant="h6" align="center" gutterBottom>*/}
                 {/*    Footer*/}
                 {/*</Typography>*/}

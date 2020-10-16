@@ -4,6 +4,8 @@ import './index.css';
 import App from './App';
 import UserSignIn from './UserSignIn'
 import UserSignUp from "./UserSignUp"
+import Applications from "./Applications";
+import Profile from "./Profile";
 import * as serviceWorker from './serviceWorker'
 import { Router, Route, browserHistory, IndexRoute, BrowserRouter } from 'react-router-dom'
 import {RoundedCorner, VerifiedUserSharp} from "@material-ui/icons";
@@ -13,7 +15,11 @@ function render() {
         // <React.StrictMode>
         <BrowserRouter>
             <React.Fragment>
-                <Route exact path="/" component={App}/>
+                {/*<Route exact path="/" component={App}/>*/}
+                <Route exact path="/" component={Profile}/>
+                <Route path="/App" component={App}/>
+                <Route path="/Applications" component={Applications}/>
+                <Route path="/Profile" component={Profile}/>
                 <Route path="/UserSignIn" component={UserSignIn}/>
                 <Route path="/UserSignUp" component={UserSignUp}/>
             </React.Fragment>
