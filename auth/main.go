@@ -46,7 +46,7 @@ func main() {
 	mySession, err := session.NewSession(
 		&aws.Config{
 			Region: aws.String("us-east-1"),
-			Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP43UNQCIMY", "zktt1awrSyCcNQ7P26jmGuG6uN7jkszxg7vV3I/D", "FwoGZXIvYXdzEMn//////////wEaDJ+9O0hV0hMgHh5NWCLAAa2SU2Ll5mwnimlqUjOdsxXWmibzf9+wCMA+qzgUpzyyliC9QzF9a+qCZMwFDbP+vr1pplVC6Tq+/d7bsS5sorkfORbXVxUQzLK5lSH5mevK17LDxMmQ/uxexCPzgpZnAg2b3WDBqQqm8VF8klsabOn0OQ248WnxITBnin1AnA5RS27R+e9YTuaavxdujFer8C8urK+DaJdREKbcJnFjAdnkMlFKi8jzGj1FOQuhG0juDibtdtJaAdGdpKAxf8f1hyj5/ab8BTItJJw/6shwZh9eyOEyFBZNmoJf+Ap1ahR+KxJrTQsr5GaUMG2lBqr/Uh4YLyvO"),
+			Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP44MY42RGQ", "Ja3wgUn+7mnOL6oW87BNbUKEUcjx+JJJJGytFCeR", "FwoGZXIvYXdzEMz//////////wEaDJyIVDHeJOrKfNP2zCLAAcEc/LuAo8CUBKoYhEIKoIg6obIGlKdfO6eahj1VZlbNxtMYE5f4kCNkzt6ommzn8/Bk5rzMsmFnS/PymoyrjALEvQO5HlP7p+wwNPIkbHwBEECLODQTkiWNPVmuivURny5ajyq1foNp4YYDAB8ExKB41Agi27oJ6ja2mkmTVo1A1uJFOEkIvQEKwPBpavUyNN3G0ZkZcSHTc/C06xPm0yu5bnz+sVGDLfuNA40H2x/kovSuLaA5qp0uMp/t3wIexSjO1Kf8BTItAJwx+6jFezoRvGD6VwYIyjBcNUQPQR4X1mp8HIK+nmb2hRpd8tDTagXVDR3S"),
 		},
 	)
 	if err != nil {
@@ -209,7 +209,7 @@ func main() {
 		})
 	})
 
-	
+
 	router.GET("/api/users/currentuser", func(c *gin.Context) {
 		// We can obtain the session token from the requests cookies, which come with every request
 		cookie, err := c.Request.Cookie("token")
@@ -251,7 +251,7 @@ func main() {
 
 	})
 
-	router.Run()
+	router.Run(":8081")
 	
 }
 

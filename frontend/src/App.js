@@ -26,6 +26,8 @@ import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 import SignIn from "./UserSignIn";
 import {BrowserRouter} from "react-router-dom";
 
+import getJobs from './api/get-jobs';
+
 function Copyright() {
     return (
         <Typography variant="body2" color="textSecondary" align="center">
@@ -40,6 +42,8 @@ function Copyright() {
     );
 }
 
+
+// stylesheet
 const useStyles = makeStyles((theme) => ({
     icon: {
         marginRight: theme.spacing(2),
@@ -83,8 +87,10 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-function CardsLayout(props) {
+async function CardsLayout(props) {
     var index = props.num;
+    var response = await getJobs();
+    console.log(response.data)
     return <Grid item xs={12} sm={6} md={4}>
         <Card className={useStyles().card}>
             <CardActions>

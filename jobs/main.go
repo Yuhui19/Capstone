@@ -65,7 +65,7 @@ func main() {
 		mySession, err := session.NewSession(
 			&aws.Config{
 				Region: aws.String("us-east-1"),
-				Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP4SLFOKHQD", "ZcnOlWHEAELQ8q3kqSmPz0yhAoicmK8ZMh/s9OyW", "FwoGZXIvYXdzEPb//////////wEaDEtHu/qR0Hu0s6RcRSLAAVqaWXVzA2iz1D3pNaV3HdLLZH7/IUmsmnPVohJcpQLFarhszW+QmlogjlH7tZc/swtRSspFWZ6Ng5wYK6oqQw5MqdMtdC75Z27LZuqah7c9qtS3ZmUJr0gWOja/bHw3a0kujx6kbV3FJ1qzMPq303XXbv9T/CY4+PBs3qyx3vbR0/IHOlHgBaomsNMHt+bGwBir3jBPv017sJnDtvVh8cj3xehB01yJ5FS7o5+pPOfJ+Zsf5lAdZsLtZ2SEYWLGQCj+1Pj7BTIt8iZ9U3AxqM1SDbE6XpzFHHg6ix0bNahuEcFt0QM2b1ZmMTWvX8gtpAzS1dsh"),
+				Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP44MY42RGQ", "Ja3wgUn+7mnOL6oW87BNbUKEUcjx+JJJJGytFCeR", "FwoGZXIvYXdzEMz//////////wEaDJyIVDHeJOrKfNP2zCLAAcEc/LuAo8CUBKoYhEIKoIg6obIGlKdfO6eahj1VZlbNxtMYE5f4kCNkzt6ommzn8/Bk5rzMsmFnS/PymoyrjALEvQO5HlP7p+wwNPIkbHwBEECLODQTkiWNPVmuivURny5ajyq1foNp4YYDAB8ExKB41Agi27oJ6ja2mkmTVo1A1uJFOEkIvQEKwPBpavUyNN3G0ZkZcSHTc/C06xPm0yu5bnz+sVGDLfuNA40H2x/kovSuLaA5qp0uMp/t3wIexSjO1Kf8BTItAJwx+6jFezoRvGD6VwYIyjBcNUQPQR4X1mp8HIK+nmb2hRpd8tDTagXVDR3S"),
 			},
 		)
 

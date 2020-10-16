@@ -24,3 +24,11 @@ build:
         manual:
           - src: '*.go'
             dest: .
+    - image: xiangjieli/auth
+      context: auth
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.go'
+            dest: .
