@@ -39,7 +39,7 @@ function Copyright() {
         <Typography variant="body2" color="textSecondary" align="center">
             {'Copyright © '}
             {/*<Link color="inherit" href="https://material-ui.com/">*/}
-            <Link color="inherit" href="https://github.com/Yuhui19?tab=repositories">
+            <Link color="inherit" href="https://github.com/Yuhui19/Capstone">
                 TechCareer Hub
             </Link>{' '}
             {new Date().getFullYear()}
@@ -177,51 +177,49 @@ function Profile() {
                     </Container>
                 </div>
                 <Container className={useStyles().statusGrid} maxWidth="sm">
-                    <Table>
-                        <Card className={useStyles().card}>
-                            <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
-                                I am looking for
-                            </Typography>
-                            <FormControl className={useStyles().lookingForOptions} variant="outlined">
-                                <Select>
-                                    <MenuItem value={10}>an internship</MenuItem>
-                                    <MenuItem value={20}>a full-time job</MenuItem>
-                                    <MenuItem value={30}>a part-time job</MenuItem>
-                                    <MenuItem value={40}>a career break</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Card>
-                        <br></br>
-                        <Card className={useStyles().card}>
-                            <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
-                                Resume
-                            </Typography>
-                            <Grid container spacing={5} justify="center">
-                                <Grid item >
-                                    {/*<Button variant="contained" color="primary">*/}
-                                    {/*    Upload New Resume*/}
-                                    {/*</Button>*/}
-                                    <Dropzone />
-                                    {/*<div id="upload"></div>*/}
-                                </Grid>
-                                <Grid item >
-                                    <Button variant="outlined" color="primary">
-                                        View Current Resume
-                                    </Button>
-                                    {/*<Button className={useStyles().button}>*/}
-                                    {/*    View Current Resume*/}
-                                    {/*</Button>*/}
-                                </Grid>
+                    <Card className={useStyles().card}>
+                        <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
+                            I am looking for
+                        </Typography>
+                        <FormControl className={useStyles().lookingForOptions} variant="outlined">
+                            <Select defaultValue={20}>
+                                <MenuItem value={10}>an internship</MenuItem>
+                                <MenuItem value={20}>a full-time job</MenuItem>
+                                <MenuItem value={30}>a part-time job</MenuItem>
+                                <MenuItem value={40}>a career break</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Card>
+                    <br></br>
+                    <Card className={useStyles().card}>
+                        <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
+                            Resume
+                        </Typography>
+                        <Grid container spacing={5} justify="center">
+                            <Grid item >
+                                {/*<Button variant="contained" color="primary">*/}
+                                {/*    Upload New Resume*/}
+                                {/*</Button>*/}
+                                <Dropzone />
+                                {/*<div id="upload"></div>*/}
                             </Grid>
-                            <br></br>
-                        </Card>
+                            <Grid item >
+                                <Button variant="outlined" color="primary">
+                                    View Current Resume
+                                </Button>
+                                {/*<Button className={useStyles().button}>*/}
+                                {/*    View Current Resume*/}
+                                {/*</Button>*/}
+                            </Grid>
+                        </Grid>
                         <br></br>
-                        <Card className={useStyles().card}>
-                            <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
-                                Experience
-                            </Typography>
-                        </Card>
-                    </Table>
+                    </Card>
+                    <br></br>
+                    <Card className={useStyles().card}>
+                        <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
+                            Experience
+                        </Typography>
+                    </Card>
                 </Container>
             </main>
         </React.Fragment>

@@ -26,14 +26,12 @@ import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 import SignIn from "./UserSignIn";
 import {BrowserRouter} from "react-router-dom";
 
-import getJobs from './api/get-jobs';
-
 function Copyright() {
     return (
         <Typography variant="body2" color="textSecondary" align="center">
             {'Copyright © '}
             {/*<Link color="inherit" href="https://material-ui.com/">*/}
-            <Link color="inherit" href="https://github.com/Yuhui19?tab=repositories">
+            <Link color="inherit" href="https://github.com/Yuhui19/Capstone">
                 TechCareer Hub
             </Link>{' '}
             {new Date().getFullYear()}
@@ -42,8 +40,6 @@ function Copyright() {
     );
 }
 
-
-// stylesheet
 const useStyles = makeStyles((theme) => ({
     icon: {
         marginRight: theme.spacing(2),
@@ -77,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
     },
     footer: {
         backgroundColor: theme.palette.background.paper,
-        padding: theme.spacing(6),
+        padding: theme.spacing(4),
     },
     button: {
         variant: "contained",
@@ -87,10 +83,8 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-async function CardsLayout(props) {
+function CardsLayout(props) {
     var index = props.num;
-    var response = await getJobs();
-    console.log(response.data)
     return <Grid item xs={12} sm={6} md={4}>
         <Card className={useStyles().card}>
             <CardActions>

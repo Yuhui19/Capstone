@@ -18,7 +18,7 @@ function Copyright() {
         <Typography variant="body2" color="textSecondary" align="center">
             {'Copyright © '}
             {/*<Link color="inherit" href="https://material-ui.com/">*/}
-            <Link color="inherit" href="https://github.com/Yuhui19?tab=repositories">
+            <Link color="inherit" href="https://github.com/Yuhui19/Capstone">
                 TechCareer Hub
             </Link>{' '}
             {new Date().getFullYear()}
@@ -27,7 +27,6 @@ function Copyright() {
     );
 }
 
-// stylesheet
 const useStyles = makeStyles((theme) => ({
     paper: {
         marginTop: theme.spacing(8),
@@ -47,8 +46,6 @@ const useStyles = makeStyles((theme) => ({
         margin: theme.spacing(3, 0, 2),
     },
 }));
-
-
 
 export default function UserSignUp() {
     const classes = useStyles();
