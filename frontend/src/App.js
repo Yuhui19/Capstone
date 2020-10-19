@@ -84,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function CardsLayout(props) {
-    var index = props.num;
+    const index = props.num;
     return <Grid item xs={12} sm={6} md={4}>
         <Card className={useStyles().card}>
             <CardActions>
@@ -114,6 +114,7 @@ function CardsLayout(props) {
 
 function App() {
     // const classes = useStyles();
+    const rows = parseInt(info.data.length / 3, 10);
     return (
         <React.Fragment>
             <CssBaseline />
@@ -165,32 +166,49 @@ function App() {
                         </div>
                     </Container>
                 </div>
+                {/* End hero unit */}
                 <Container className={useStyles().cardGrid} maxWidth="md">
-                    {/* End hero unit */}
 
                     {/*first line of grid*/}
-                    <Grid container spacing={4}>
-                        {/*first grid in first line*/}
-                        <CardsLayout num={0}/>
-                        {/*second grid in first line*/}
-                        <CardsLayout num={1}/>
-                        {/*third grid in first line*/}
-                        <CardsLayout num={2}/>
-                    </Grid>
+                    {/*<Grid container spacing={4}>*/}
+                    {/*    /!*first grid in first line*!/*/}
+                    {/*    <CardsLayout num={0}/>*/}
+                    {/*    /!*second grid in first line*!/*/}
+                    {/*    <CardsLayout num={1}/>*/}
+                    {/*    /!*third grid in first line*!/*/}
+                    {/*    <CardsLayout num={2}/>*/}
+                    {/*</Grid>*/}
 
-                    {/*second line of grid*/}
-                    <Grid container spacing={4}>
-                        {/*{cards.map((card) => (*/}
-                        <CardsLayout num={3}/>
-                        <CardsLayout num={4}/>
-                        <CardsLayout num={5}/>
-                    </Grid>
+                    {/*/!*second line of grid*!/*/}
+                    {/*<Grid container spacing={4}>*/}
+                    {/*    /!*{cards.map((card) => (*!/*/}
+                    {/*    <CardsLayout num={3}/>*/}
+                    {/*    <CardsLayout num={4}/>*/}
+                    {/*    <CardsLayout num={5}/>*/}
+                    {/*</Grid>*/}
+
+                    {/*<Grid container spacing={4}>*/}
+                    {/*    /!*{cards.map((card) => (*!/*/}
+                    {/*    <CardsLayout num={6}/>*/}
+                    {/*    <CardsLayout num={7}/>*/}
+                    {/*    <CardsLayout num={8}/>*/}
+                    {/*</Grid>*/}
+
+                    {Array.from(Array(parseInt(info.data.length / 3, 10)).keys()).map((row)=>(
+                        <Grid container spacing={4} key={row.company}>
+                            {/*first grid in first line*/}
+                            <CardsLayout num={row*3}/>
+                            {/*second grid in first line*/}
+                            <CardsLayout num={row*3+1}/>
+                            {/*third grid in first line*/}
+                            <CardsLayout num={row*3+2}/>
+                        </Grid>
+                    ))}
 
                     <Grid container spacing={4}>
-                        {/*{cards.map((card) => (*/}
-                        <CardsLayout num={6}/>
-                        <CardsLayout num={7}/>
-                        <CardsLayout num={8}/>
+                        {Array.from(Array(parseInt(info.data.length % 3, 10)).keys()).map((row) =>(
+                            <CardsLayout num={info.data.length - row - 1} key={row.company}/>
+                        ))}
                     </Grid>
 
                 </Container>
