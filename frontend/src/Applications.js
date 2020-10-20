@@ -258,11 +258,13 @@ function Applications() {
                                                 {/*<StyledTableCell align="left">*/}
                                                 {/*    {row.status}*/}
                                                 {/*</StyledTableCell>*/}
-                                                <Select defaultValue={40}>
-                                                    <MenuItem value={10}>Interviewing</MenuItem>
-                                                    <MenuItem value={20}>Offer</MenuItem>
-                                                    <MenuItem value={30}>Rejected</MenuItem>
-                                                    <MenuItem value={40}>Applied</MenuItem>
+                                                <Select defaultValue={1}>
+                                                    <MenuItem value={1}>Applied</MenuItem>
+                                                    <MenuItem value={2}>Online Assessment</MenuItem>
+                                                    <MenuItem value={3}>Phone Interview</MenuItem>
+                                                    <MenuItem value={4}>Onsite Interview</MenuItem>
+                                                    <MenuItem value={5}>Offer</MenuItem>
+                                                    <MenuItem value={6}>Rejected</MenuItem>
                                                 </Select>
                                             </FormControl>
                                         </StyledTableCell>

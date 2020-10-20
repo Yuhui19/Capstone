@@ -10,7 +10,7 @@ import (
 	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	// "github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	// "github.com/aws/aws-sdk-go/service/dynamodb/expression"
@@ -43,17 +43,10 @@ type Claims struct {
 
 func main() {
 
-	mySession, err := session.NewSession(
-		&aws.Config{
-			Region: aws.String("us-east-1"),
-			Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP44MY42RGQ", "Ja3wgUn+7mnOL6oW87BNbUKEUcjx+JJJJGytFCeR", "FwoGZXIvYXdzEMz//////////wEaDJyIVDHeJOrKfNP2zCLAAcEc/LuAo8CUBKoYhEIKoIg6obIGlKdfO6eahj1VZlbNxtMYE5f4kCNkzt6ommzn8/Bk5rzMsmFnS/PymoyrjALEvQO5HlP7p+wwNPIkbHwBEECLODQTkiWNPVmuivURny5ajyq1foNp4YYDAB8ExKB41Agi27oJ6ja2mkmTVo1A1uJFOEkIvQEKwPBpavUyNN3G0ZkZcSHTc/C06xPm0yu5bnz+sVGDLfuNA40H2x/kovSuLaA5qp0uMp/t3wIexSjO1Kf8BTItAJwx+6jFezoRvGD6VwYIyjBcNUQPQR4X1mp8HIK+nmb2hRpd8tDTagXVDR3S"),
-		},
-	)
-	if err != nil {
-		fmt.Println("Got error configuring session")
-		fmt.Println(err.Error())
-		// os.Exit(1)
-	}
+	// get AWS session
+	mySession := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
 
 	// Create DynamoDB client
 	svc := dynamodb.New(mySession)
@@ -162,7 +155,7 @@ func main() {
 		}
 
 		// if can find such one, Compare the stored hashed password, with the hashed version of the password that was received
-	    if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userJson.Password)); err != nil {
+	    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userJson.Password)); err != nil {
 		    // If the two passwords don't match, return a 401 status
 			c.JSON(http.StatusBadRequest, gin.H{"error": "password doesn't match"})
 			return
@@ -251,7 +244,7 @@ func main() {
 
 	})
 
-	router.Run(":8081")
+	router.Run(":8080")
 	
 }
 
@@ -289,7 +282,7 @@ func findOneUserByEmail(svc *dynamodb.DynamoDB, email string, tableName string) 
 		
 	err = dynamodbattribute.UnmarshalMap(result.Item, &_user)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
+		// panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
 		return _user, false
 	}
 

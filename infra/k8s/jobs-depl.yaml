@@ -15,6 +15,13 @@ spec:
       containers:
         - name: jobs
           image: xiangjieli/jobs
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: 'AKIAJ2LZW4JXV2BU4Q6Q'
+            - name: AWS_SECRET_ACCESS_KEY
+              value: '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'
+            - name: AWS_REGION
+              value: 'us-east-1'
 
 ---
 apiVersion: v1
@@ -30,17 +37,18 @@ spec:
       port: 8080
       targetPort: 8080
 
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: jobs-srv
+  name: jobs-srv2
 spec:
   type: LoadBalancer
   selector:
     app: jobs
   ports:
-    - name: jobs
+    - name: port-8080
       protocol: TCP
       port: 8080
       targetPort: 8080

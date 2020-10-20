@@ -15,6 +15,13 @@ spec:
       containers:
         - name: auth
           image: xiangjieli/auth
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: 'AKIAJ2LZW4JXV2BU4Q6Q'
+            - name: AWS_SECRET_ACCESS_KEY
+              value: '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'
+            - name: AWS_REGION
+              value: 'us-east-1'
 
 ---
 apiVersion: v1
@@ -27,20 +34,25 @@ spec:
   ports:
     - name: auth
       protocol: TCP
-      port: 8081
-      targetPort: 8081
+      port: 8080
+      targetPort: 8080
+
+
+
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-srv
+  name: auth-srv2
 spec:
   type: LoadBalancer
+  externalIPs:
+    - 10.0.0.0
   selector:
     app: auth
   ports:
-    - name: auth
+    - name: port-8080
       protocol: TCP
-      port: 8081
-      targetPort: 8081
+      port: 8080
+      targetPort: 8080

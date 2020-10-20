@@ -6,17 +6,19 @@ import (
 	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	// "github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 
+	// "github.com/satori/go.uuid"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 )
 
 type Item struct {
+	Id string `json:"id"`
     Query   string  `json:"query"`
     Location  string  `json:"location"`
     Title   string  `json:"title"`
@@ -29,6 +31,8 @@ type Item struct {
 	EmploymentType string  `json:"employmentType"`
 	Industries string  `json:"industries"`
 }
+
+
 
 type ScrapeResult struct {
 	Time string `json:"time"`
@@ -49,9 +53,14 @@ func getItems() []Item {
 	var items []Item
 	var scrapeResult ScrapeResult
 	json.Unmarshal(raw, &scrapeResult)
-	fmt.Println(scrapeResult)
+	// fmt.Println(scrapeResult)
 	items = scrapeResult.Data
-	fmt.Println(items)
+	// for i,_ := range items {
+	// 	uid := uuid.Must(uuid.NewV4())
+	// 	items[i].Id = uid.String()
+	// 	// fmt.Println(item.Id)
+	// }
+	// fmt.Println(items)
     return items
 }
 
@@ -59,21 +68,14 @@ func main() {
 
 	//===========================================
 
-	// run the router
+	//run the router
 	router := gin.Default()
 	router.GET("/api/jobs", func(c *gin.Context) {
-		mySession, err := session.NewSession(
-			&aws.Config{
-				Region: aws.String("us-east-1"),
-				Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP44MY42RGQ", "Ja3wgUn+7mnOL6oW87BNbUKEUcjx+JJJJGytFCeR", "FwoGZXIvYXdzEMz//////////wEaDJyIVDHeJOrKfNP2zCLAAcEc/LuAo8CUBKoYhEIKoIg6obIGlKdfO6eahj1VZlbNxtMYE5f4kCNkzt6ommzn8/Bk5rzMsmFnS/PymoyrjALEvQO5HlP7p+wwNPIkbHwBEECLODQTkiWNPVmuivURny5ajyq1foNp4YYDAB8ExKB41Agi27oJ6ja2mkmTVo1A1uJFOEkIvQEKwPBpavUyNN3G0ZkZcSHTc/C06xPm0yu5bnz+sVGDLfuNA40H2x/kovSuLaA5qp0uMp/t3wIexSjO1Kf8BTItAJwx+6jFezoRvGD6VwYIyjBcNUQPQR4X1mp8HIK+nmb2hRpd8tDTagXVDR3S"),
-			},
-		)
 
-		if err != nil {
-			fmt.Println("Got error configuring session")
-			fmt.Println(err.Error())
-			// os.Exit(1)
-		}
+		mySession := session.Must(session.NewSessionWithOptions(session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+		}))
+
 
 		// Create DynamoDB client
 		svc := dynamodb.New(mySession)
@@ -81,7 +83,7 @@ func main() {
 		tableName := "Jobs"
 
 		// Get back all fields of a job post
-		proj := expression.NamesList(expression.Name("query"), expression.Name("location"), expression.Name("title"), expression.Name("company"), expression.Name("place"), expression.Name("link"), expression.Name("date"), expression.Name("senorityLevel"), expression.Name("function"), expression.Name("employmentType"), expression.Name("industries"))
+		proj := expression.NamesList(expression.Name("id"), expression.Name("query"), expression.Name("location"), expression.Name("title"), expression.Name("company"), expression.Name("place"), expression.Name("link"), expression.Name("date"), expression.Name("senorityLevel"), expression.Name("function"), expression.Name("employmentType"), expression.Name("industries"))
 
 		expr, err := expression.NewBuilder().WithProjection(proj).Build()
 		if err != nil {
@@ -160,19 +162,10 @@ func main() {
 
 	// fmt.Println("get ready to put items to table")
 
-	// // Create Session with MaxRetries configuration to be shared by multiple service clients.
-	// mySession, err := session.NewSession(
-	// 	&aws.Config{
-	// 		Region: aws.String("us-east-1"),
-	// 		Credentials: credentials.NewStaticCredentials("ASIAQOOYYKP46YKPIFOB", "x7h+DYIvk0cya5J75LCsdc63OpELuE5x7X/v4FnU", "FwoGZXIvYXdzELD//////////wEaDAcaucRd81J+Ln0gsiLAAXlxt3Kgjv/Ts+wUKdsbsu9Cb+iieO03yzVSpkWPsHhUejbb4oMrOC6DyaJ24HKxPmFCkBeZbwDENpuc7IunWgXcxb3+owOim5nDn9RxH43hLb5yH7JmHnV/Y/hIxBjP3v5QLjv2FUkku/FT3SuxYtlIqQktdd+Yu0vuADGCrAf8Zvp5xRUjlncs5FMl1jt6gsVrnMjNwEU+GUbwbG9F+TSbNaL61Niqi0xtQqHfekOBMvJmgQC+Cxv2S/2D8uDdVyivnen7BTItq3sEdXjT3r5168H8THKFaXbyrPIR78P6rFX3IEVBfsYeSfezhJuqD8rRqBq3"),
-	// 	},
-	// )
+	// mySession := session.Must(session.NewSessionWithOptions(session.Options{
+	// 	SharedConfigState: session.SharedConfigEnable,
+	// }))
 
-	// if err != nil {
-	// 	fmt.Println("Got error configuring session")
-    //     fmt.Println(err.Error())
-    //     // os.Exit(1)
-	// }
 
 	// // Create DynamoDB client
 	// svc := dynamodb.New(mySession)
@@ -183,15 +176,18 @@ func main() {
 	// // Add each item to Movies table:
 	// tableName := "Jobs"
 
-	// for _, item := range items {
-	// 	av, err := dynamodbattribute.MarshalMap(item)
+	// for i,_ := range items {
+	// 	uid := uuid.Must(uuid.NewV4())
+	// 	items[i].Id = uid.String()
+	// 	// fmt.Println(item)
+	// 	av, err := dynamodbattribute.MarshalMap(items[i])
 	// 	if err != nil {
 	// 		fmt.Println("Got error marshalling map:")
 	// 		fmt.Println(err.Error())
 	// 		os.Exit(1)
 	// 	}
 
-	// 	// Create item in table Movies
+	// 	// Create item in table Jobs
 	// 	input := &dynamodb.PutItemInput{
 	// 		Item:      av,
 	// 		TableName: aws.String(tableName),
@@ -204,7 +200,7 @@ func main() {
 	// 		os.Exit(1)
 	// 	}
 
-	// 	fmt.Println("Successfully added '" + item.Title + "' (" + item.Company + ") to table " + tableName)
+	// 	fmt.Println("Successfully added job to database")
 	// }
 
 	//===========================================
