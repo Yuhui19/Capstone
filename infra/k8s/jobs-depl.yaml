@@ -15,13 +15,6 @@ spec:
       containers:
         - name: jobs
           image: xiangjieli/jobs
-          env:
-            - name: AWS_ACCESS_KEY_ID
-              value: 'AKIAJ2LZW4JXV2BU4Q6Q'
-            - name: AWS_SECRET_ACCESS_KEY
-              value: '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'
-            - name: AWS_REGION
-              value: 'us-east-1'
 
 ---
 apiVersion: v1
