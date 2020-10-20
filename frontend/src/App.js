@@ -21,10 +21,21 @@ import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import {Menu} from "@material-ui/icons";
 
+import { withStyles } from '@material-ui/core/styles';
+import Dialog from '@material-ui/core/Dialog';
+import MuiDialogTitle from '@material-ui/core/DialogTitle';
+import MuiDialogContent from '@material-ui/core/DialogContent';
+import MuiDialogActions from '@material-ui/core/DialogActions';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
+
 import UserSignIn from "./UserSignIn";
 import { Router, Route, browserHistory, IndexRoute } from 'react-router'
 import SignIn from "./UserSignIn";
 import {BrowserRouter} from "react-router-dom";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import {FormControl} from "@material-ui/core";
 
 function Copyright() {
     return (
@@ -80,18 +91,91 @@ const useStyles = makeStyles((theme) => ({
         color: "primary",
         // color: "#20c997",
         justifyContent: 'flex-end'
-    }
+    },
+    statusOption: {
+        // padding: theme.spacing(2),
+        // height: '100%',
+        width: "100%",
+        height: 70,
+    },
 }));
+
+const styles = (theme) => ({
+    root: {
+        margin: 0,
+        padding: theme.spacing(2),
+    },
+    closeButton: {
+        position: 'absolute',
+        right: theme.spacing(1),
+        top: theme.spacing(1),
+        color: theme.palette.grey[500],
+    },
+});
+
+const DialogTitle = withStyles(styles)((props) => {
+    const { children, classes, onClose, ...other } = props;
+    return (
+        <MuiDialogTitle disableTypography className={classes.root} {...other}>
+            <Typography variant="h5">{children}</Typography>
+            {onClose ? (
+                <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+                    <CloseIcon />
+                </IconButton>
+            ) : null}
+        </MuiDialogTitle>
+    );
+});
+
+const DialogContent = withStyles((theme) => ({
+    root: {
+        padding: theme.spacing(2),
+    },
+}))(MuiDialogContent);
+
+const DialogActions = withStyles((theme) => ({
+    root: {
+        margin: 0,
+        padding: theme.spacing(1),
+    },
+}))(MuiDialogActions);
 
 function CardsLayout(props) {
     const index = props.num;
+    const [open, setOpen] = React.useState(false);
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+    const handleClose = () => {
+        setOpen(false);
+    };
+    let requireImagePath = () => {
+        try {
+            return require("../public/images/" + info.data[index].company + ".png");
+        } catch (e) {
+            return false;
+        }
+    }
+    let imagePath;
+    if (requireImagePath())
+        imagePath = "images/" + info.data[index].company + ".png";
+    else
+        imagePath = "images/default.png";
+
+    // let imagePath;
+    // if (companyIcon.includes(info.data[index].company))
+    //     imagePath = "images/" + info.data[index].company + ".png";
+    // else
+    //     imagePath = "images/default.png";
+
     return <Grid item xs={12} sm={6} md={4}>
         <Card className={useStyles().card}>
             <CardActions>
                 <CardMedia
                     className={useStyles().cardMedia}
-                    image="images/google.png"
-                    title="Image title"
+                    image={imagePath}
+                    // image="images/google.png"
+                    // title="Image title"
                 />
             </CardActions>
                 <CardContent className={useStyles().cardContent}>
@@ -104,9 +188,42 @@ function CardsLayout(props) {
 
                 </CardContent>
             <CardActions>
-                <Button variant="contained" color="primary" style={{ marginLeft: "auto" }} onClick={()=>window.location.href=info.data[index].link}>
-                    Apply now!
+                {/*<Button variant="contained" color="primary" style={{ marginLeft: "auto" }} onClick={()=>window.location.href=info.data[index].link}>*/}
+                <Button variant="contained" color="primary" style={{ marginLeft: "auto"}} onClick={handleClickOpen}>
+                    Details
                 </Button>
+                <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open} fullWidth={true}>
+                    <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+                        {info.data[index].company}
+                    </DialogTitle>
+                    <DialogContent dividers>
+                        <Typography>Title: {info.data[index].title}</Typography>
+                        <Typography>Location: {info.data[index].place}</Typography>
+                        <Typography>Type: {info.data[index].employmentType}</Typography>
+                        <Typography>Level: {info.data[index].senorityLevel}</Typography>
+                        <Typography>Industry: {info.data[index].function}</Typography>
+                        <br/>
+                        <FormControl className={useStyles().statusOption} variant="outlined">
+                            {/*<StyledTableCell align="left">*/}
+                            {/*    {row.status}*/}
+                            {/*</StyledTableCell>*/}
+                            <Select defaultValue={7}>
+                                <MenuItem value={1}>Applied</MenuItem>
+                                <MenuItem value={2}>Online Assessment</MenuItem>
+                                <MenuItem value={3}>Phone Interview</MenuItem>
+                                <MenuItem value={4}>Onsite Interview</MenuItem>
+                                <MenuItem value={5}>Offer</MenuItem>
+                                <MenuItem value={6}>Rejected</MenuItem>
+                                <MenuItem value={7}>Not Applied</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.data[index].link, '_blank')}>
+                            Apply Now!
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </CardActions>
         </Card>
     </Grid>
@@ -114,13 +231,14 @@ function CardsLayout(props) {
 
 function App() {
     // const classes = useStyles();
+    const [open, setOpen] = React.useState(false);
     const rows = parseInt(info.data.length / 3, 10);
     return (
         <React.Fragment>
             <CssBaseline />
             <AppBar position="relative">
                 <Toolbar>
-                    <Menu className={useStyles().icon}/>
+                    {/*<Menu className={useStyles().icon}/>*/}
                     <Typography variant="h6" color="inherit" noWrap>
                         {/*TechCareer Hub*/}
                     </Typography>

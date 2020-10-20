@@ -16,7 +16,7 @@ function render() {
         <BrowserRouter>
             <React.Fragment>
                 {/*<Route exact path="/" component={App}/>*/}
-                <Route exact path="/" component={Profile}/>
+                <Route exact path="/" component={App}/>
                 <Route path="/App" component={App}/>
                 <Route path="/Applications" component={Applications}/>
                 <Route path="/Profile" component={Profile}/>

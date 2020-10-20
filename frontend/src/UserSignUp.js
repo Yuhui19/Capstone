@@ -121,6 +121,7 @@ export default function UserSignUp() {
                         variant="contained"
                         color="primary"
                         className={classes.submit}
+                        href="/Profile"
                     >
                         Sign Up
                     </Button>
