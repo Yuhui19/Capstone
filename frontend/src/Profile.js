@@ -174,6 +174,9 @@ function Profile() {
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             Expected Graduate Date
                         </Typography>
+                        <Button variant="contained" color="primary">
+                            Edit
+                        </Button>
                     </Container>
                 </div>
                 <Container className={useStyles().statusGrid} maxWidth="sm">
@@ -215,11 +218,11 @@ function Profile() {
                         <br></br>
                     </Card>
                     <br></br>
-                    <Card className={useStyles().card}>
-                        <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            Experience
-                        </Typography>
-                    </Card>
+                    {/*<Card className={useStyles().card}>*/}
+                    {/*    <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>*/}
+                    {/*        Experience*/}
+                    {/*    </Typography>*/}
+                    {/*</Card>*/}
                 </Container>
             </main>
         </React.Fragment>

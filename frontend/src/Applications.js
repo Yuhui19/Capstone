@@ -129,7 +129,7 @@ const useStyles = makeStyles((theme) => ({
     statusOption: {
         // padding: theme.spacing(2),
         // height: '100%',
-        width: 120,
+        width: 200,
     },
 }));
 
@@ -218,7 +218,7 @@ function Applications() {
                             <TableHead>
                                 <TableRow>
                                     <StyledTableCell>Company</StyledTableCell>
-                                    <StyledTableCell align="left">Role</StyledTableCell>
+                                    <StyledTableCell align="left">Type</StyledTableCell>
                                     <StyledTableCell align="left">Link</StyledTableCell>
                                     <StyledTableCell align="left">Date Applied</StyledTableCell>
                                     <StyledTableCell align="left">Status</StyledTableCell>
