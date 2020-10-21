@@ -1,10 +1,7 @@
 FROM golang:1.14
 
-# WORKDIR /app
+WORKDIR /app
 COPY . .
-# RUN mkdir /root/.aws
-# COPY ${HOME}/.aws/credentials /root/.aws/credentials:ro
-# COPY ${HOME}/.aws/config /root/.aws/config:ro
 RUN go get -u github.com/gin-gonic/gin
 RUN go get -u golang.org/x/crypto/bcrypt
 

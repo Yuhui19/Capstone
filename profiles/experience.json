@@ -1,0 +1,22 @@
+{
+    "experience": [
+        {
+            "company": "Salesforce",
+            "title": "software engineer intern",
+            "startMonth": "05",
+            "startYear": "2020",
+            "endMonth": "08",
+            "endYear": "2020",
+            "description": "I worked for commerce cloud team..."
+        },
+        {
+            "company": "University of Utah",
+            "title": "computer science tutor",
+            "startMonth": "02",
+            "startYear": "2020",
+            "endMonth": "05",
+            "endYear": "2020",
+            "description": "I tutored student-athletes..."
+        }
+    ]
+}
