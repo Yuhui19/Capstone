@@ -121,7 +121,7 @@ func main() {
 
 		// Finally, we set the client cookie for "token" as the JWT we just generated
 		// we also set an expiry time which is the same as the token itself
-		c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "localhost", false, true)
+		c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "techcareerhub.dev", true, true)
 
 		
 		c.JSON(http.StatusOK, gin.H{
@@ -185,7 +185,7 @@ func main() {
 
 		// Finally, we set the client cookie for "token" as the JWT we just generated
 		// we also set an expiry time which is the same as the token itself
-		c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "localhost", false, true)
+		c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "techcareerhub.dev", true, true)
 
 		c.JSON(http.StatusOK, gin.H{
 			"result": "you have logged in!",
@@ -196,7 +196,7 @@ func main() {
 
 
 	router.POST("/api/users/signout", func(c *gin.Context) {
-		c.SetCookie("token", "", 0, "/", "localhost", false, true)
+		c.SetCookie("token", "", 0, "/", "techcareerhub.dev", true, true)
 		c.JSON(http.StatusOK, gin.H{
 			"result": "you have logged out!",
 		})
@@ -244,7 +244,7 @@ func main() {
 
 	})
 
-	router.Run(":8080")
+	router.Run(":8081")
 	
 }
 

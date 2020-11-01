@@ -24,8 +24,8 @@ build:
         manual:
           - src: '*.go'
             dest: .
-    - image: xiangjieli/auth
-      context: auth
+    - image: xiangjieli/users
+      context: users
       docker:
         dockerfile: Dockerfile
       sync:

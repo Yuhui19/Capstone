@@ -4,7 +4,8 @@ import logo from './logo.svg';
 import './App.css';
 import './bootstrap.min.css'
 import Button from '@material-ui/core/Button';
-import info from './linkedin_output.json'
+// import info from './linkedin_output.json'
+import getJobs from './api/get-jobs'
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -140,8 +141,15 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions);
 
-function CardsLayout(props) {
+async function CardsLayout(props) {
+
+    // // get job info from api
+    // const info = await getJobs()
+
+
+
     const index = props.num;
+    const info = props.data;
     const [open, setOpen] = React.useState(false);
     const handleClickOpen = () => {
         setOpen(true);
@@ -229,8 +237,13 @@ function CardsLayout(props) {
     </Grid>
 }
 
-function App() {
+const App = (props) => {
     // const classes = useStyles();
+
+    // get job info from api
+    const info = props.data
+
+
     const [open, setOpen] = React.useState(false);
     const rows = parseInt(info.data.length / 3, 10);
     return (
@@ -315,17 +328,17 @@ function App() {
                     {Array.from(Array(parseInt(info.data.length / 3, 10)).keys()).map((row)=>(
                         <Grid container spacing={4} key={row.company}>
                             {/*first grid in first line*/}
-                            <CardsLayout num={row*3}/>
+                            <CardsLayout num={row*3} data={info}/>
                             {/*second grid in first line*/}
-                            <CardsLayout num={row*3+1}/>
+                            <CardsLayout num={row*3+1} data={info}/>
                             {/*third grid in first line*/}
-                            <CardsLayout num={row*3+2}/>
+                            <CardsLayout num={row*3+2} data={info}/>
                         </Grid>
                     ))}
 
                     <Grid container spacing={4}>
                         {Array.from(Array(parseInt(info.data.length % 3, 10)).keys()).map((row) =>(
-                            <CardsLayout num={info.data.length - row - 1} key={row.company}/>
+                            <CardsLayout num={info.data.length - row - 1} key={row.company} data={info}/>
                         ))}
                     </Grid>
 

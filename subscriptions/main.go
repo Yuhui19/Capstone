@@ -20,7 +20,10 @@ import (
 	// "io/ioutil"
 	"os"
 	"time"
-	"strconv"
+	"log"
+
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 )
 
@@ -28,23 +31,20 @@ import (
 var jwtKey = []byte("my_secret_key")
 
 // Binding from JSON
-type CreateApplicationRequest struct {
-	JobId     string `json:"jobId" binding:"required"`
+type CreateSubscriptionRequest struct {
+	Company     string `json:"company" binding:"required"`
 }
 
-type UpdateStatusRequest struct {
-	StatusCode   int    `json:"statusCode" binding:"required"`
+// Binding from JSON
+type CancelSubscriptionRequest struct {
+	Id     string `json:"id" binding:"required"`
 }
 
-type Application struct {
+type Subscription struct {
 	Id          string    `json:"id"`
 	Email       string    `json:"email"`
-	Status      string    `json:"status"`
-	StatusCode  int       `json:"statusCode"`
 	Date        string    `json:"date"`
 	Company     string    `json:"company"`
-	Title       string    `json:"title"`
-	Link        string    `json:"link"`
 }
 
 type Job struct {
@@ -60,6 +60,14 @@ type Job struct {
 	Function string  `json:"function"`
 	EmploymentType string  `json:"employmentType"`
 	Industries string  `json:"industries"`
+}
+
+type EmailRequest struct {
+	Email string `json:"email"`
+    Location  string  `json:"location"`
+    Title   string  `json:"title"`
+	Company string  `json:"company"`
+	Link string  `json:"link"`
 }
 
 // Create a struct that will be encoded to a JWT.
@@ -125,162 +133,189 @@ func main() {
 	// Create DynamoDB client
 	svc := dynamodb.New(mySession)
 
+	//=========================================================
+	// gin-gonic route handler
+
 	router := gin.New();
 	router.Use(CurrentUser())
-
-	// create a new application
-	router.POST("/api/applications", func(c *gin.Context) {
+	// create a new subscription
+	router.POST("/api/subscriptions", func(c *gin.Context) {
 
 		// get the user email from the JWT
 		email := c.MustGet("currentUser").(string)
 		fmt.Println("The current user is: ", email)
 
-		// get jobId from the request body
-		var createApplicationRequest CreateApplicationRequest
-		if err := c.ShouldBindJSON(&createApplicationRequest); err != nil {
+		// get company from the request body
+		var createSubscriptionRequest CreateSubscriptionRequest
+		if err := c.ShouldBindJSON(&createSubscriptionRequest); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		fmt.Println("The current jobId is: ", createApplicationRequest.JobId)
+		fmt.Println("The subscribed company is: ", createSubscriptionRequest.Company)
 
 
-		// get company, title, link from the  database per the jobId
-		job, ok := findOneJobById(svc, createApplicationRequest.JobId, "Jobs")
-		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "This job doesn't exist"})
-			return
-		}
-		fmt.Println(job)
-
-
-		// check if the user already applied for this role
-		if canfindOneApplicationByJobAndEmail(svc, job.Company, email, job.Title, "Applications") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You have applied for this job"})
-			return
-		}
-
-
-		// create an application object and store it to the database
+		// create an subscription entry and store it to the database
 		uid := uuid.Must(uuid.NewV4())
 		currentTime := time.Now()
-		application := Application{
+		subscription := Subscription{
 			Id: uid.String(),
 			Email: email,
-			Status: "applied",
-			StatusCode: 1,
 			Date: currentTime.Format("2006-01-02"),
-			Company: job.Company,
-			Title: job.Title,
-			Link: job.Link,
+			Company: createSubscriptionRequest.Company,
 		}
-		createNewApplication(svc, application, "Applications")
+		createNewSubscription(svc, subscription, "Subscriptions")
 
 
 		// http response
 		c.JSON(http.StatusOK, gin.H{
-			"id": application.Id,
-			"email": application.Email,
-			"status": application.Status,
-			"statusCode": application.StatusCode,
-			"date": application.Date,
-			"company": application.Company,
-			"title": application.Title,
-			"link": application.Link,
+			"id": subscription.Id,
+			"email": subscription.Email,
+			"date": subscription.Date,
+			"company": subscription.Company,
 		})
 	})
 
 
-	// get all applicaitons
-	router.GET("/api/applications", func(c *gin.Context) {
+	// get all subscriptions of currentuser
+	router.GET("/api/subscriptions", func(c *gin.Context) {
 		
-
 		// get the user email from the JWT
 		email := c.MustGet("currentUser").(string)
 		fmt.Println("The current user is: ", email)
 
-		// get all applicaiton belonging to current user from the database
-		count, applications := findAllApplicationsByEmail(svc, email, "Applications")
+		// get all subscriptions belonging to current user from the database
+		count, subscriptions := findAllSubscriptionsByEmail(svc, email, "Subscriptions")
 
 		c.JSON(http.StatusOK, gin.H{
 			"count": count,
-			"data": applications,
+			"data": subscriptions,
 		})
 	})
 	
 
 
-	// update the status of an application
-	router.PUT("/api/applications/:id", func(c *gin.Context) {
+	// delete(cancel) one subscription
+	router.DELETE("/api/subscriptions", func(c *gin.Context) {
 
 		// get the user email from the JWT
 		email := c.MustGet("currentUser").(string)
 		fmt.Println("The current user is: ", email)
 		
-		// get statusCode from the request body
-		var updateStatusRequest UpdateStatusRequest
-		if err := c.ShouldBindJSON(&updateStatusRequest); err != nil {
+		// get subscription id from the request body
+		var cancelSubscriptionRequest CancelSubscriptionRequest
+		if err := c.ShouldBindJSON(&cancelSubscriptionRequest); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		fmt.Println("The subscription id is: ", cancelSubscriptionRequest.Id)
 
-		// update the application info in the database
-		applicationId := c.Param("id")
-		ok := updateApplicationStatus(svc, applicationId, updateStatusRequest.StatusCode, email, "Applications")
+		// delete the subscription info in the database
+		ok := deleteSubscription(svc, cancelSubscriptionRequest.Id, "Subscriptions")
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update application"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to cancel subscription"})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"result": "update the application status successfully!",
-			"id": applicationId,
-			"statusCode": updateStatusRequest.StatusCode,
+			"result": "cancel the subscription successfully!",
+			"id": cancelSubscriptionRequest.Id,
 		})
 	})
 
-	router.Run(":8082")
+		// example route to send emails
+		router.POST("/api/emails", func(c *gin.Context) {
+			type EmailRequest struct {
+				Email string `json:"email"`
+				Location  string  `json:"location"`
+				Title   string  `json:"title"`
+				Company string  `json:"company"`
+				Link string  `json:"link"`
+			}
+
+
+			// get  job info from the request body
+			var emailRequest EmailRequest
+			if err := c.ShouldBindJSON(&emailRequest); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			fmt.Println("The email address is: ", emailRequest.Email)
+	
+			// send email
+			from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
+			subject := "New Job Postings from Your Subscribed Company"
+			to := mail.NewEmail("Example User", emailRequest.Email)
+			plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
+			htmlContent := "<strong>Company: " + emailRequest.Company + "</strong><p>Title: " + emailRequest.Title + "</p><p>Location: " + emailRequest.Location + "</p><p>Apply Link: " + emailRequest.Link + "</p>"
+			message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+			client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+			response, err := client.Send(message)
+			if err != nil {
+				log.Println(err)
+			} else {
+				fmt.Println(response.StatusCode)
+				fmt.Println(response.Body)
+				fmt.Println(response.Headers)
+			}
+
+	
+			c.JSON(http.StatusOK, gin.H{
+				"result": "send email successfully!",
+			})
+		})
+
+	router.Run(":8084")
+
+
+	//=======================================================
+	// kafka consumer client 
+
+
+	// c, err := kafka.NewConsumer(&kafka.ConfigMap{
+	// 	"bootstrap.servers": "kaf1-srv",
+	// 	"group.id":          "myGroup",
+	// 	"auto.offset.reset": "earliest",
+	// })
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// c.SubscribeTopics([]string{"test-topic", "^aRegex.*[Tt]opic"}, nil)
+
+	// for {
+	// 	msg, err := c.ReadMessage(-1)
+	// 	if err == nil {
+	// 		fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+
+	// 		// TODO: parse the message to a Job struct and get the company
+	// 		var company string
+
+	// 		// find all the subscription with this company from the Subscription database
+	// 		count, subscriptions := findAllSubscriptionsByCompany(svc, company, "Subscriptions")
+
+	// 		// TODO: send email to every subscriber
+
+
+	// 	} else {
+	// 		// The client will automatically try to recover from all errors.
+	// 		fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+	// 	}
+	// }
+	// c.Close()
 
 }
 
 
 
-func findOneJobById(svc *dynamodb.DynamoDB, jobId string, tableName string) (job Job, ok bool){
-	_job := Job{}
-	result, err := svc.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: aws.String(jobId),
-			},
-		},
-	})
+
+
+
+func createNewSubscription(svc *dynamodb.DynamoDB, newSubscription Subscription, tableName string) {
+
+	av, err := dynamodbattribute.MarshalMap(newSubscription)
 	if err != nil {
-		fmt.Println(err.Error())
-		return _job, false
-	}
-
-	if result.Item == nil {
-		return _job, false
-	}
-		
-	err = dynamodbattribute.UnmarshalMap(result.Item, &_job)
-	if err != nil {
-		// panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
-		return _job, false
-	}
-
-	return _job, true
-}
-
-
-
-
-
-func createNewApplication(svc *dynamodb.DynamoDB, newApplication Application, tableName string) {
-
-	av, err := dynamodbattribute.MarshalMap(newApplication)
-	if err != nil {
-		fmt.Println("Got error marshalling new application")
+		fmt.Println("Got error marshalling new subscription")
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
@@ -301,11 +336,12 @@ func createNewApplication(svc *dynamodb.DynamoDB, newApplication Application, ta
 
 
 
-func canfindOneApplicationByJobAndEmail(svc *dynamodb.DynamoDB, company string, email string, 
-	title string, tableName string) bool {
+
+
+func findAllSubscriptionsByEmail(svc *dynamodb.DynamoDB, email string, tableName string) (num int, subscriptions []Subscription) {
 
 	filt := expression.Name("email").Equal(expression.Value(email))
-	proj := expression.NamesList(expression.Name("email"), expression.Name("company"), expression.Name("title"))
+	proj := expression.NamesList(expression.Name("id"), expression.Name("email"), expression.Name("company"), expression.Name("date"))
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 	if err != nil {
 		fmt.Println("Got error building expression:")
@@ -331,64 +367,10 @@ func canfindOneApplicationByJobAndEmail(svc *dynamodb.DynamoDB, company string, 
 	}
 
 	numItems := 0
+	_subscriptions := []Subscription{}
 
 	for _, i := range result.Items {
-		item := Application{}
-
-		err = dynamodbattribute.UnmarshalMap(i, &item)
-
-		if err != nil {
-			fmt.Println("Got error unmarshalling:")
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-
-		// Which ones had a higher rating than minimum?
-		if (item.Company == company && item.Title == title) {
-			// Or it we had filtered by rating previously:
-			//   if item.Year == year {
-			numItems++
-		}
-	}
-
-	return numItems == 1
-
-}
-
-
-func findAllApplicationsByEmail(svc *dynamodb.DynamoDB, email string, tableName string) (num int, applications []Application) {
-
-	filt := expression.Name("email").Equal(expression.Value(email))
-	proj := expression.NamesList(expression.Name("id"), expression.Name("email"), expression.Name("company"), expression.Name("date"), expression.Name("link"), expression.Name("status"), expression.Name("statusCode"), expression.Name("title"))
-	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
-	if err != nil {
-		fmt.Println("Got error building expression:")
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
-	// Build the query input parameters
-	params := &dynamodb.ScanInput{
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		FilterExpression:          expr.Filter(),
-		ProjectionExpression:      expr.Projection(),
-		TableName:                 aws.String(tableName),
-	}
-
-	// Make the DynamoDB Query API call
-	result, err := svc.Scan(params)
-	if err != nil {
-		fmt.Println("Query API call failed:")
-		fmt.Println((err.Error()))
-		os.Exit(1)
-	}
-
-	numItems := 0
-	_applications := []Application{}
-
-	for _, i := range result.Items {
-		item := Application{}
+		item := Subscription{}
 
 		err = dynamodbattribute.UnmarshalMap(i, &item)
 
@@ -399,69 +381,88 @@ func findAllApplicationsByEmail(svc *dynamodb.DynamoDB, email string, tableName 
 		}
 
 		numItems++;
-		_applications = append(_applications, item)
+		_subscriptions = append(_subscriptions, item)
 	}
 
-	return numItems, _applications
+	return numItems, _subscriptions
 
 }
 
 
 
 
-func updateApplicationStatus(svc *dynamodb.DynamoDB, id string, statusCode int, email string, tableName string) bool {
 
-	var status string
-	if statusCode == 1 {
-		status = "applied"
-	} else if statusCode == 2 {
-		status = "online assessment"
-	} else if statusCode == 3 {
-		status = "phone interview"
-	} else if statusCode == 4 {
-		status = "onsite interview"
-	} else if statusCode == 5 {
-		status = "offer"
-	} else {
-		status = "rejected"
+func findAllSubscriptionsByCompany(svc *dynamodb.DynamoDB, company string, tableName string) (num int, subscriptions []Subscription) {
+
+	filt := expression.Name("company").Equal(expression.Value(company))
+	proj := expression.NamesList(expression.Name("id"), expression.Name("email"), expression.Name("company"), expression.Name("date"))
+	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
+	if err != nil {
+		fmt.Println("Got error building expression:")
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 
-	type ApplicationKey struct {
-		Id  string    `json:"id"`
-		Email string  `json:"email"`
-	}
-	key, _err := dynamodbattribute.MarshalMap(ApplicationKey{ 
-		Id:  id,
-		Email: email,
-	})
-	if _err != nil {
-		fmt.Println(_err.Error())
-		return false
+	// Build the query input parameters
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		ProjectionExpression:      expr.Projection(),
+		TableName:                 aws.String(tableName),
 	}
 
-	s := "status"
+	// Make the DynamoDB Query API call
+	result, err := svc.Scan(params)
+	if err != nil {
+		fmt.Println("Query API call failed:")
+		fmt.Println((err.Error()))
+		os.Exit(1)
+	}
 
-	input := &dynamodb.UpdateItemInput{
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":c": {
-				N: aws.String(strconv.Itoa(statusCode)),
-			},
-			":s": {
-				S: aws.String(status),
+	numItems := 0
+	_subscriptions := []Subscription{}
+
+	for _, i := range result.Items {
+		item := Subscription{}
+
+		err = dynamodbattribute.UnmarshalMap(i, &item)
+
+		if err != nil {
+			fmt.Println("Got error unmarshalling:")
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
+		numItems++;
+		_subscriptions = append(_subscriptions, item)
+	}
+
+	return numItems, _subscriptions
+
+}
+
+
+
+
+func deleteSubscription(svc *dynamodb.DynamoDB, id string, tableName string) bool {
+
+	input := &dynamodb.DeleteItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {
+				S: aws.String(id),
 			},
 		},
-		ExpressionAttributeNames: map[string]*string{"#st": &s},
 		TableName: aws.String(tableName),
-		Key: key,
-		ReturnValues:     aws.String("UPDATED_NEW"),
-		UpdateExpression: aws.String("set statusCode = :c, #st=:s"),
 	}
-
-	_, err := svc.UpdateItem(input)
+	
+	_, err := svc.DeleteItem(input)
 	if err != nil {
+		fmt.Println("Got error calling DeleteItem")
 		fmt.Println(err.Error())
 		return false
 	}
+
 	return true
 
 }

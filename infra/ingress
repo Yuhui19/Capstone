@@ -17,7 +17,7 @@ spec:
           - path: /api/users/?(.*)
             backend:
               serviceName: users-srv
-              servicePort: 8081
+              servicePort: 8080
           # - path: /?(.*)
           #   backend:
           #     serviceName: client-srv

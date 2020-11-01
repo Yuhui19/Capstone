@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jobs-depl
+  name: users-depl
 spec:
   replicas: 1
   selector: 
     matchLabels:
-      app: jobs
+      app: users
   template:
     metadata:
       labels:
-        app: jobs
+        app: users
     spec:
       containers:
-        - name: jobs
-          image: xiangjieli/jobs
+        - name: users
+          image: xiangjieli/users
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
@@ -41,26 +41,28 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jobs-srv
+  name: users-srv
 spec:
   selector:
-    app: jobs
+    app: users
   ports:
-    - name: jobs
+    - name: port-8080
       protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8081
+      targetPort: 8081
+
+
 
 
 # ---
 # apiVersion: v1
 # kind: Service
 # metadata:
-#   name: jobs-srv2
+#   name: users-srv2
 # spec:
 #   type: LoadBalancer
 #   selector:
-#     app: jobs
+#     app: users
 #   ports:
 #     - name: port-8080
 #       protocol: TCP
