@@ -141,7 +141,8 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions);
 
-async function CardsLayout(props) {
+
+function CardsLayout(props) {
 
     // // get job info from api
     // const info = await getJobs()
