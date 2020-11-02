@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
+
 	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+
 	// "github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -15,41 +18,36 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-
 )
 
 type Item struct {
-	Id string `json:"id"`
-    Query   string  `json:"query"`
-    Location  string  `json:"location"`
-    Title   string  `json:"title"`
-	Company string  `json:"company"`
-	Place string   `json:"place"`
-	Date string  `json:"date"`
-	Link string  `json:"link"`
-	SenorityLevel string  `json:"senorityLevel"`
-	Function string  `json:"function"`
-	EmploymentType string  `json:"employmentType"`
-	Industries string  `json:"industries"`
+	Id             string `json:"id"`
+	Query          string `json:"query"`
+	Location       string `json:"location"`
+	Title          string `json:"title"`
+	Company        string `json:"company"`
+	Place          string `json:"place"`
+	Date           string `json:"date"`
+	Link           string `json:"link"`
+	SenorityLevel  string `json:"senorityLevel"`
+	Function       string `json:"function"`
+	EmploymentType string `json:"employmentType"`
+	Industries     string `json:"industries"`
 }
-
-
 
 type ScrapeResult struct {
 	Time string `json:"time"`
 	Data []Item `json:"data"`
 }
 
-
-
 // Get table items from JSON file
 func getItems() []Item {
 	raw, err := ioutil.ReadFile("./linkedin_output.json")
 	// fmt.Println(raw)
-    if err != nil {
-        fmt.Println(err.Error())
-        os.Exit(1)
-    }
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 
 	var items []Item
 	var scrapeResult ScrapeResult
@@ -62,27 +60,25 @@ func getItems() []Item {
 	// 	// fmt.Println(item.Id)
 	// }
 	// fmt.Println(items)
-    return items
+	return items
 }
 
 func CORSMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
+	return func(c *gin.Context) {
 
-        c.Header("Access-Control-Allow-Origin", "*")
-        c.Header("Access-Control-Allow-Credentials", "true")
-        c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-        c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
 
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
-        }
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
 
-        c.Next()
-    }
+		c.Next()
+	}
 }
-
-
 
 func main() {
 
@@ -96,7 +92,6 @@ func main() {
 		mySession := session.Must(session.NewSessionWithOptions(session.Options{
 			SharedConfigState: session.SharedConfigEnable,
 		}))
-
 
 		// Create DynamoDB client
 		svc := dynamodb.New(mySession)
@@ -130,10 +125,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		items := make([]Item, 10)
+		items := make([]Item, 12)
 		for idx, i := range result.Items {
 			item := Item{}
-		
+
 			err = dynamodbattribute.UnmarshalMap(i, &item)
 			// fmt.Println(item)
 			if err != nil {
@@ -141,11 +136,10 @@ func main() {
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
-			
+
 			items[idx] = item
 
 		}
-
 
 		c.JSON(200, gin.H{
 			"data": items,
@@ -155,7 +149,7 @@ func main() {
 
 	//===========================================
 
-	// kafka consumer client 
+	// kafka consumer client
 	// c, err := kafka.NewConsumer(&kafka.ConfigMap{
 	// 	"bootstrap.servers": "kaf1-srv",
 	// 	"group.id":          "myGroup",
@@ -186,7 +180,6 @@ func main() {
 	// mySession := session.Must(session.NewSessionWithOptions(session.Options{
 	// 	SharedConfigState: session.SharedConfigEnable,
 	// }))
-
 
 	// // Create DynamoDB client
 	// svc := dynamodb.New(mySession)
@@ -225,8 +218,5 @@ func main() {
 	// }
 
 	//===========================================
-	
-
 
 }
-

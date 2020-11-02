@@ -8,9 +8,16 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import logo from './logo.svg';
 import './App.css';
-import './bootstrap.min.css'
+import './bootstrap.min.css';
+import subscription from './subscription.json';
 import Button from '@material-ui/core/Button';
 import info from './linkedin_output.json'
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItem';
+import ListItemAvatar from '@material-ui/core/ListItem';
+import DeleteIcon from '@material-ui/icons/Delete';
+
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -22,7 +29,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Grid from '@material-ui/core/Grid';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import {makeStyles, withStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import {Menu} from "@material-ui/icons";
@@ -33,6 +40,12 @@ import FormControl from '@material-ui/core/FormControl';
 import Paper from '@material-ui/core/Paper';
 import userEvent from "@testing-library/user-event";
 import {useDropzone} from 'react-dropzone';
+import Dialog from "@material-ui/core/Dialog";
+import MuiDialogTitle from "@material-ui/core/DialogTitle";
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from "@material-ui/icons/Close";
+import MuiDialogContent from "@material-ui/core/DialogContent";
+import MuiDialogActions from "@material-ui/core/DialogActions";
 
 function Copyright() {
     return (
@@ -125,7 +138,54 @@ function Dropzone(props) {
     );
 }
 
+const styles = (theme) => ({
+    root: {
+        margin: 0,
+        padding: theme.spacing(2),
+    },
+    closeButton: {
+        position: 'absolute',
+        right: theme.spacing(1),
+        top: theme.spacing(1),
+        color: theme.palette.grey[500],
+    },
+});
+
+const DialogTitle = withStyles(styles)((props) => {
+    const { children, classes, onClose, ...other } = props;
+    return (
+        <MuiDialogTitle disableTypography className={classes.root} {...other}>
+            <Typography variant="h5">{children}</Typography>
+            {onClose ? (
+                <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+                    <CloseIcon />
+                </IconButton>
+            ) : null}
+        </MuiDialogTitle>
+    );
+});
+
+const DialogContent = withStyles((theme) => ({
+    root: {
+        padding: theme.spacing(2),
+    },
+}))(MuiDialogContent);
+
+const DialogActions = withStyles((theme) => ({
+    root: {
+        margin: 0,
+        padding: theme.spacing(1),
+    },
+}))(MuiDialogActions);
+
 function Profile() {
+    const [remove, setDelete] = React.useState(false);
+    const handleDeleteClick = () => {
+        setDelete(true);
+    };
+    const handleClose = () => {
+        setDelete(false);
+    };
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -218,11 +278,30 @@ function Profile() {
                         <br></br>
                     </Card>
                     <br></br>
-                    {/*<Card className={useStyles().card}>*/}
-                    {/*    <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>*/}
-                    {/*        Experience*/}
-                    {/*    </Typography>*/}
-                    {/*</Card>*/}
+                    <Card className={useStyles().card}>
+                        <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
+                            Subscription
+                        </Typography>
+                        <List>
+                            {subscription.data.map((company)=>(
+                                <ListItem key{...company}>
+                                    {/*<ListItemAvatar src={"../public/images/" + company + ".png"} />*/}
+                                    <ListItemText spacing={2}>
+                                        {company}
+                                    </ListItemText>
+                                    <DeleteIcon onClick={handleDeleteClick}/>
+                                    <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={remove} fullWidth={true}>
+                                        <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+                                            Do you want to delete this subscription?
+                                        </DialogTitle>
+                                        <DialogContent dividers>
+                                            <Typography>test</Typography>
+                                        </DialogContent>
+                                    </Dialog>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Card>
                 </Container>
             </main>
         </React.Fragment>
