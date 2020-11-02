@@ -5,7 +5,8 @@ import './App.css';
 import './bootstrap.min.css'
 import Button from '@material-ui/core/Button';
 // import info from './linkedin_output.json'
-import getJobs from './api/get-jobs'
+import getJobs from './api/get-jobs';
+// const axios = require('axios');
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -160,14 +161,14 @@ function CardsLayout(props) {
     };
     let requireImagePath = () => {
         try {
-            return require("../public/images/" + info.data[index].company + ".png");
+            return require("../public/images/" + info.company + ".png");
         } catch (e) {
             return false;
         }
     }
     let imagePath;
     if (requireImagePath())
-        imagePath = "images/" + info.data[index].company + ".png";
+        imagePath = "images/" + info.company + ".png";
     else
         imagePath = "images/default.png";
 
@@ -189,11 +190,11 @@ function CardsLayout(props) {
             </CardActions>
                 <CardContent className={useStyles().cardContent}>
                     <Typography gutterBottom variant="h5" component="h2">
-                        {info.data[index].title}
+                        {info.title}
                     </Typography>
-                    <Typography>{info.data[index].company}</Typography>
-                    <Typography>{info.data[index].place}</Typography>
-                    <Typography>{info.data[index].employmentType}</Typography>
+                    <Typography>{info.company}</Typography>
+                    <Typography>{info.place}</Typography>
+                    <Typography>{info.employmentType}</Typography>
 
                 </CardContent>
             <CardActions>
@@ -203,14 +204,14 @@ function CardsLayout(props) {
                 </Button>
                 <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open} fullWidth={true}>
                     <DialogTitle id="customized-dialog-title" onClose={handleClose}>
-                        {info.data[index].company}
+                        {info.company}
                     </DialogTitle>
                     <DialogContent dividers>
-                        <Typography>Title: {info.data[index].title}</Typography>
-                        <Typography>Location: {info.data[index].place}</Typography>
-                        <Typography>Type: {info.data[index].employmentType}</Typography>
-                        <Typography>Level: {info.data[index].senorityLevel}</Typography>
-                        <Typography>Industry: {info.data[index].function}</Typography>
+                        <Typography>Title: {info.title}</Typography>
+                        <Typography>Location: {info.place}</Typography>
+                        <Typography>Type: {info.employmentType}</Typography>
+                        <Typography>Level: {info.senorityLevel}</Typography>
+                        <Typography>Industry: {info.function}</Typography>
                         <br/>
                         <FormControl className={useStyles().statusOption} variant="outlined">
                             {/*<StyledTableCell align="left">*/}
@@ -228,7 +229,7 @@ function CardsLayout(props) {
                         </FormControl>
                     </DialogContent>
                     <DialogActions>
-                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.data[index].link, '_blank')}>
+                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.link, '_blank')}>
                             Apply Now!
                         </Button>
                     </DialogActions>
@@ -241,12 +242,20 @@ function CardsLayout(props) {
 const App = (props) => {
     // const classes = useStyles();
 
-    // get job info from api
-    const info = props.data
+    const [data, setData] = React.useState({"data": []});
 
+    React.useEffect(()=> 
+        getJobs()
+        .then(res => {
+            const jobs = res.data;
+            setData(jobs);
+            return jobs;
+        }
+    ), [])
+    
 
     const [open, setOpen] = React.useState(false);
-    const rows = parseInt(info.data.length / 3, 10);
+    const rows = parseInt(data.data.length / 3, 10);
     return (
         <React.Fragment>
             <CssBaseline />
@@ -326,20 +335,20 @@ const App = (props) => {
                     {/*    <CardsLayout num={8}/>*/}
                     {/*</Grid>*/}
 
-                    {Array.from(Array(parseInt(info.data.length / 3, 10)).keys()).map((row)=>(
+                    {Array.from(Array(parseInt(data.data.length / 3, 10)).keys()).map((row)=>(
                         <Grid container spacing={4} key={row.company}>
                             {/*first grid in first line*/}
-                            <CardsLayout num={row*3} data={info}/>
+                            <CardsLayout num={row*3} data={data.data[row * 3]}/>
                             {/*second grid in first line*/}
-                            <CardsLayout num={row*3+1} data={info}/>
+                            <CardsLayout num={row*3+1} data={data.data[row * 3 + 1]}/>
                             {/*third grid in first line*/}
-                            <CardsLayout num={row*3+2} data={info}/>
+                            <CardsLayout num={row*3+2} data={data.data[row * 3 + 2]}/>
                         </Grid>
                     ))}
 
                     <Grid container spacing={4}>
-                        {Array.from(Array(parseInt(info.data.length % 3, 10)).keys()).map((row) =>(
-                            <CardsLayout num={info.data.length - row - 1} key={row.company} data={info}/>
+                        {Array.from(Array(parseInt(data.data.length % 3, 10)).keys()).map((row) =>(
+                            <CardsLayout num={data.data.length - row - 1} key={row.company} data={data.data[data.data.length - row - 1]}/>
                         ))}
                     </Grid>
 
@@ -358,6 +367,12 @@ const App = (props) => {
             {/* End footer */}
         </React.Fragment>
     );
+}
+
+App.defaultProps = async () => {
+    const { data } = await getJobs();
+
+    return { data : data };
 }
 
 
