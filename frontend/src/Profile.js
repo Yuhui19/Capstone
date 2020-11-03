@@ -8,9 +8,16 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import logo from './logo.svg';
 import './App.css';
-import './bootstrap.min.css'
+import './bootstrap.min.css';
+import subscription from './subscription.json';
 import Button from '@material-ui/core/Button';
 import info from './linkedin_output.json'
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItem';
+import ListItemAvatar from '@material-ui/core/ListItem';
+import DeleteIcon from '@material-ui/icons/Delete';
+
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -22,7 +29,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Grid from '@material-ui/core/Grid';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import {makeStyles, withStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
 import {Menu} from "@material-ui/icons";
@@ -33,6 +40,15 @@ import FormControl from '@material-ui/core/FormControl';
 import Paper from '@material-ui/core/Paper';
 import userEvent from "@testing-library/user-event";
 import {useDropzone} from 'react-dropzone';
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from "@material-ui/icons/Close";
+
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 function Copyright() {
     return (
@@ -125,7 +141,66 @@ function Dropzone(props) {
     );
 }
 
+const styles = (theme) => ({
+    root: {
+        margin: 0,
+        padding: theme.spacing(2),
+    },
+    closeButton: {
+        position: 'absolute',
+        right: theme.spacing(1),
+        top: theme.spacing(1),
+        color: theme.palette.grey[500],
+    },
+});
+
+const SubDialogTitle = withStyles(styles)((props) => {
+    const { children, classes, onClose, ...other } = props;
+    return (
+        <DialogTitle disableTypography className={classes.root} {...other}>
+            <Typography variant="h5">{children}</Typography>
+            {onClose ? (
+                <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+                    <CloseIcon />
+                </IconButton>
+            ) : null}
+        </DialogTitle>
+    );
+});
+
+const SubDialogContent = withStyles((theme) => ({
+    root: {
+        padding: theme.spacing(2),
+    },
+}))(DialogContent);
+
+const SubDialogActions = withStyles((theme) => ({
+    root: {
+        margin: 0,
+        padding: theme.spacing(1),
+    },
+}))(DialogActions);
+
 function Profile() {
+
+    //subscript delete button action
+    const [remove, setDelete] = React.useState(false);
+    const handleDeleteClick = () => {
+        setDelete(true);
+    };
+    const handleDeleteClose = () => {
+        setDelete(false);
+    };
+
+    //edit button action
+    const [open, setOpen] = React.useState(false);
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+    const handleEditClose = () => {
+        setOpen(false);
+    };
+
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -171,12 +246,65 @@ function Profile() {
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             Email
                         </Typography>
-                        <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
+                        {/* <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             Expected Graduate Date
-                        </Typography>
-                        <Button variant="contained" color="primary">
+                        </Typography> */}
+                        <br></br>
+                        <Button variant="contained" color="primary" onClick={handleClickOpen}>
                             Edit
                         </Button>
+                        <Dialog open={open} onClose={handleEditClose}>
+                            <DialogTitle>
+                                Edit Profile
+                            </DialogTitle>
+                            <DialogContent>
+                                {/* <DialogContentText>
+                                    To subscribe to this website, please enter your email address here. We will send updates
+                                    occasionally.
+                                </DialogContentText> */}
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="fname"
+                                    label="First Name"
+                                    type="fname"
+                                    fullWidth
+                                />
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="lname"
+                                    label="Last Name"
+                                    type="lname"
+                                    fullWidth
+                                />
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="univ"
+                                    label="University"
+                                    type="univ"
+                                    fullWidth
+                                />
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="major"
+                                    label="Major"
+                                    type="major"
+                                    fullWidth
+                                />
+                            </DialogContent>
+                            <br></br>
+                            <DialogActions>
+                                <Button onClick={handleEditClose} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleEditClose} variant="contained" color="primary">
+                                    Update
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </Container>
                 </div>
                 <Container className={useStyles().statusGrid} maxWidth="sm">
@@ -218,12 +346,34 @@ function Profile() {
                         <br></br>
                     </Card>
                     <br></br>
-                    {/*<Card className={useStyles().card}>*/}
-                    {/*    <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>*/}
-                    {/*        Experience*/}
-                    {/*    </Typography>*/}
-                    {/*</Card>*/}
+                    <Card className={useStyles().card}>
+                        <Typography className={useStyles().lookingForTitle} component="h6" variant="h5" color="textPrimary" gutterBottom>
+                            Subscription
+                        </Typography>
+                        <List>
+                            {subscription.data.map((company)=>(
+                                <ListItem key{...company}>
+                                    {/*<ListItemAvatar src={"../public/images/" + company + ".png"} />*/}
+                                    <ListItemText spacing={2}>
+                                        {company}
+                                    </ListItemText>
+                                    <DeleteIcon onClick={handleDeleteClick}/>
+                                    <Dialog onClose={handleDeleteClose} aria-labelledby="customized-dialog-title" open={remove} fullWidth={true}>
+                                        <SubDialogTitle id="customized-dialog-title" onClose={handleDeleteClose}>
+                                            Do you want to delete this subscription?
+                                        </SubDialogTitle>
+                                        <SubDialogContent dividers>
+                                            <Typography>test</Typography>
+                                        </SubDialogContent>
+                                    </Dialog>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Card>
                 </Container>
+                <footer className={useStyles().footer}>
+                    <Copyright />
+                </footer>
             </main>
         </React.Fragment>
     )

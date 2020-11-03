@@ -90,6 +90,28 @@ export default function UserSignUp() {
                                 variant="outlined"
                                 required
                                 fullWidth
+                                // id="univ"
+                                label="University"
+                                // name="univ"
+                                // autoComplete="univ"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                variant="outlined"
+                                required
+                                fullWidth
+                                // id="major"
+                                label="Major"
+                                // name="major"
+                                // autoComplete="major"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                variant="outlined"
+                                required
+                                fullWidth
                                 // id="email"
                                 label="Email Address"
                                 // name="email"
@@ -108,12 +130,12 @@ export default function UserSignUp() {
                                 // autoComplete="current-password"
                             />
                         </Grid>
-                        {/*<Grid item xs={12}>*/}
-                        {/*    <FormControlLabel*/}
-                        {/*        control={<Checkbox value="allowExtraEmails" color="primary" />}*/}
-                        {/*        label="I want to receive inspiration, marketing promotions and updates via email."*/}
-                        {/*    />*/}
-                        {/*</Grid>*/}
+                        <Grid item xs={12}>
+                            <FormControlLabel
+                                control={<Checkbox value="allowExtraEmails" color="primary" />}
+                                label="I want to receive position updates via email when I subscribe a company."
+                            />
+                        </Grid>
                     </Grid>
                     <Button
                         type="submit"
@@ -125,18 +147,18 @@ export default function UserSignUp() {
                     >
                         Sign Up
                     </Button>
-                    {/*<Grid container justify="flex-end">*/}
-                    {/*    <Grid item>*/}
-                    {/*        <Link href="#" variant="body2">*/}
-                    {/*            Already have an account? Sign in*/}
-                    {/*        </Link>*/}
-                    {/*    </Grid>*/}
-                    {/*</Grid>*/}
+                    <Grid container justify="flex-end">
+                        <Grid item>
+                            <Link href="UserSignIn" variant="body2">
+                                Already have an account? Sign in
+                            </Link>
+                        </Grid>
+                    </Grid>
                 </form>
             </div>
-            {/*<Box mt={5}>*/}
-            {/*    <Copyright />*/}
-            {/*</Box>*/}
+            <Box mt={5}>
+                <Copyright />
+            </Box>
         </Container>
     );
 }

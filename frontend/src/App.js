@@ -30,6 +30,8 @@ import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import FavoriteIcon from '@material-ui/icons/Favorite';
 
 import UserSignIn from "./UserSignIn";
 import { Router, Route, browserHistory, IndexRoute } from 'react-router'
@@ -37,7 +39,7 @@ import SignIn from "./UserSignIn";
 import {BrowserRouter} from "react-router-dom";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import {FormControl} from "@material-ui/core";
+import {CardHeader, FormControl} from "@material-ui/core";
 
 function Copyright() {
     return (
@@ -142,14 +144,7 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions);
 
-
 function CardsLayout(props) {
-
-    // // get job info from api
-    // const info = await getJobs()
-
-
-
     const index = props.num;
     const info = props.data;
     const [open, setOpen] = React.useState(false);
@@ -172,11 +167,10 @@ function CardsLayout(props) {
     else
         imagePath = "images/default.png";
 
-    // let imagePath;
-    // if (companyIcon.includes(info.data[index].company))
-    //     imagePath = "images/" + info.data[index].company + ".png";
-    // else
-    //     imagePath = "images/default.png";
+    const [iconStatus, setIconStatus] = React.useState(false)
+    const iconStatusData = (event, props) => {
+        setIconStatus(!iconStatus)
+    }
 
     return <Grid item xs={12} sm={6} md={4}>
         <Card className={useStyles().card}>
@@ -186,7 +180,10 @@ function CardsLayout(props) {
                     image={imagePath}
                     // image="images/google.png"
                     // title="Image title"
+                    action={iconStatus? <FavoriteIcon/> : <FavoriteBorderIcon/> }
                 />
+                {/*<FavoriteBorderIcon></FavoriteBorderIcon>*/}
+                <CardHeader style={{ marginLeft: "auto"}} color="primary" action={iconStatus? <FavoriteIcon/> : <FavoriteBorderIcon/>} onClick={(e) => iconStatusData(e,props)} />
             </CardActions>
                 <CardContent className={useStyles().cardContent}>
                     <Typography gutterBottom variant="h5" component="h2">
@@ -229,7 +226,7 @@ function CardsLayout(props) {
                         </FormControl>
                     </DialogContent>
                     <DialogActions>
-                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.link, '_blank')}>
+                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.data[index].link, '_blank')}>
                             Apply Now!
                         </Button>
                     </DialogActions>
@@ -251,7 +248,6 @@ const App = (props) => {
             setData(jobs);
         }
     ), [])
-    
 
     const [open, setOpen] = React.useState(false);
     const rows = parseInt(data.data.length / 3, 10);
