@@ -19,6 +19,18 @@ spec:
             backend:
               serviceName: users-srv
               servicePort: 8081
+          - path: /api/applications/?(.*)
+            backend:
+              serviceName: applications-srv
+              servicePort: 8082          
+          - path: /api/profiles/?(.*)
+            backend:
+              serviceName: profiles-srv
+              servicePort: 8083
+          - path: /api/subscriptions/?(.*)
+            backend:
+              serviceName: subscriptions-srv
+              servicePort: 8084                                      
         #   - path: /?(.*)
         #     backend:
         #       serviceName: frontend-srv

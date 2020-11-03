@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	// "github.com/aws/aws-sdk-go/aws/credentials"
@@ -11,15 +11,30 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 
-	// "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"net/http"
 
 )
 
 type Item struct {
 	Id string `json:"id"`
+    Query   string  `json:"query"`
+    Location  string  `json:"location"`
+    Title   string  `json:"title"`
+	Company string  `json:"company"`
+	Place string   `json:"place"`
+	Date string  `json:"date"`
+	Link string  `json:"link"`
+	SenorityLevel string  `json:"senorityLevel"`
+	Function string  `json:"function"`
+	EmploymentType string  `json:"employmentType"`
+	Industries string  `json:"industries"`
+}
+
+type CreateJobRequest struct {
     Query   string  `json:"query"`
     Location  string  `json:"location"`
     Title   string  `json:"title"`
@@ -86,6 +101,30 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func main() {
 
+	// ===================================================
+	// AWS setup
+
+	mySession := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+
+	// Create DynamoDB client
+	svc := dynamodb.New(mySession)
+
+	tableName := "Jobs"
+
+	// ================================================
+	// Kafka Producer setup 
+
+	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "kaf1-srv"})
+
+	if err != nil {
+		fmt.Printf("Failed to create producer: %s\n", err)
+		os.Exit(1)
+	}
+
+
 	//===========================================
 
 	//run the router
@@ -93,15 +132,6 @@ func main() {
 	router.Use(CORSMiddleware())
 	router.GET("/api/jobs", func(c *gin.Context) {
 
-		mySession := session.Must(session.NewSessionWithOptions(session.Options{
-			SharedConfigState: session.SharedConfigEnable,
-		}))
-
-
-		// Create DynamoDB client
-		svc := dynamodb.New(mySession)
-
-		tableName := "Jobs"
 
 		// Get back all fields of a job post
 		proj := expression.NamesList(expression.Name("id"), expression.Name("query"), expression.Name("location"), expression.Name("title"), expression.Name("company"), expression.Name("place"), expression.Name("link"), expression.Name("date"), expression.Name("senorityLevel"), expression.Name("function"), expression.Name("employmentType"), expression.Name("industries"))
@@ -130,8 +160,11 @@ func main() {
 			os.Exit(1)
 		}
 
-		items := make([]Item, 10)
-		for idx, i := range result.Items {
+
+		_items := []Item{}
+
+		// items := make([]Item, 12)
+		for _, i := range result.Items {
 			item := Item{}
 		
 			err = dynamodbattribute.UnmarshalMap(i, &item)
@@ -142,15 +175,83 @@ func main() {
 				os.Exit(1)
 			}
 			
-			items[idx] = item
+			// items[idx] = item
+			_items = append(_items, item)
 
 		}
 
 
 		c.JSON(200, gin.H{
-			"data": items,
+			"data": _items,
 		})
 	})
+
+
+
+	// create a new job
+	router.POST("/api/jobs", func(c *gin.Context) {
+
+
+		// get the info of the job waiting to be created from the request body
+		var createJobRequest CreateJobRequest
+		if err := c.ShouldBindJSON(&createJobRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// create an application object and store it to the database
+		uid := uuid.Must(uuid.NewV4())
+		item := Item{
+			Id: uid.String(),
+			Query: createJobRequest.Query,
+			Location: createJobRequest.Location,
+			Title: createJobRequest.Title,
+			Company: createJobRequest.Company,
+			Place: createJobRequest.Place,
+			Date: createJobRequest.Date,
+			Link: createJobRequest.Link,
+			SenorityLevel: createJobRequest.SenorityLevel,
+			Function: createJobRequest.Function,
+			EmploymentType: createJobRequest.EmploymentType,
+			Industries: createJobRequest.Industries,
+		}
+		createNewJob(svc, item, tableName)
+
+
+		// send a message to subscriptions service
+		// the topic should be "job-created"
+		topic := "job-created"
+		bytes, err := json.Marshal(item)
+		if err != nil {
+			fmt.Println(err)
+		}
+		p.Produce(&kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+			Value:          bytes,
+		}, nil)
+
+		// Wait for message deliveries before shutting down
+		p.Flush(15 * 1000)
+		fmt.Println("send message to subscription service: " + string(bytes))
+
+
+		// http response
+		c.JSON(http.StatusOK, gin.H{
+			"id": item.Id,
+			"query": item.Query,
+			"location": item.Location,
+			"title": item.Title,
+			"company": item.Company,
+			"place": item.Place,
+			"date": item.Date,
+			"link": item.Link,
+			"senorityLevel": item.SenorityLevel,
+			"function": item.Function,
+			"employmentType": item.EmploymentType,
+			"industries": item.Industries,
+		})
+	})
+
 	router.Run()
 
 	//===========================================
@@ -228,5 +329,29 @@ func main() {
 	
 
 
+}
+
+
+
+func createNewJob(svc *dynamodb.DynamoDB, item Item, tableName string) {
+
+	av, err := dynamodbattribute.MarshalMap(item)
+	if err != nil {
+		fmt.Println("Got error marshalling new application")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	input := &dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(tableName),
+	}
+	
+	_, err = svc.PutItem(input)
+	if err != nil {
+		fmt.Println("Got error calling PutItem:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 }
 

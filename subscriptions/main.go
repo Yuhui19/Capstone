@@ -7,7 +7,7 @@ import (
 	"github.com/satori/go.uuid"
 	// "golang.org/x/crypto/bcrypt"
 	// "regexp"
-	// "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	// "github.com/aws/aws-sdk-go/aws/credentials"
@@ -16,7 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 
 	"github.com/dgrijalva/jwt-go"
-	// "encoding/json"
+	"encoding/json"
 	// "io/ioutil"
 	"os"
 	"time"
@@ -143,6 +143,66 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 
+
+func jobCreatedListener(svc *dynamodb.DynamoDB) {
+	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
+		"bootstrap.servers": "kaf1-srv",
+		"group.id":          "myGroup",
+		"auto.offset.reset": "earliest",
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	consumer.SubscribeTopics([]string{"job-created", "^aRegex.*[Tt]opic"}, nil)
+	fmt.Println("kafka consumer created!")
+
+	
+		
+	for {
+		fmt.Println("kafka consumer is waiting for new message")
+		msg, err := consumer.ReadMessage(-1)
+		if err == nil {
+			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+	
+			// parse the message to a Job struct and get the company
+			var createdJob Job
+			json.Unmarshal(msg.Value, &createdJob)
+	
+			// find all the subscription with this company from the Subscription database
+			_, subscriptions := findAllSubscriptionsByCompany(svc, createdJob.Company, "Subscriptions")
+	
+			// TODO: send email to every subscriber
+			for _, i := range subscriptions {
+				from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
+				subject := "New Job Postings from Your Subscribed Company"
+				to := mail.NewEmail("Example User", i.Email)
+				plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
+				htmlContent := "<strong>Company: " + createdJob.Company + "</strong><p>Title: " + createdJob.Title + "</p><p>Location: " + createdJob.Location + "</p><p>Apply Link: " + createdJob.Link + "</p>"
+				message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+				client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+				response, err := client.Send(message)
+				if err != nil {
+					log.Println(err)
+				} else {
+					fmt.Println(response.StatusCode)
+					fmt.Println(response.Body)
+					fmt.Println(response.Headers)
+				}
+	
+			}
+	
+		} else {
+			// The client will automatically try to recover from all errors.
+			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+		}
+	}
+}
+
+
+
+
 func main() {
 
 	// get AWS session
@@ -152,6 +212,70 @@ func main() {
 
 	// Create DynamoDB client
 	svc := dynamodb.New(mySession)
+
+	go jobCreatedListener(svc)
+
+
+	//========================
+	// Kafka client
+
+	// consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
+	// 	"bootstrap.servers": "kaf1-srv",
+	// 	"group.id":          "myGroup",
+	// 	"auto.offset.reset": "earliest",
+	// })
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// consumer.SubscribeTopics([]string{"job-created", "^aRegex.*[Tt]opic"}, nil)
+	// fmt.Println("kafka consumer created!")
+
+	
+		
+	// for {
+	// 	fmt.Println("kafka consumer is waiting for new message")
+	// 	msg, err := consumer.ReadMessage(-1)
+	// 	if err == nil {
+	// 		fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+	
+	// 		// parse the message to a Job struct and get the company
+	// 		var createdJob Job
+	// 		json.Unmarshal(msg.Value, &createdJob)
+	
+	// 		// find all the subscription with this company from the Subscription database
+	// 		_, subscriptions := findAllSubscriptionsByCompany(svc, createdJob.Company, "Subscriptions")
+	
+	// 		// TODO: send email to every subscriber
+	// 		for _, i := range subscriptions {
+	// 			from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
+	// 			subject := "New Job Postings from Your Subscribed Company"
+	// 			to := mail.NewEmail("Example User", i.Email)
+	// 			plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
+	// 			htmlContent := "<strong>Company: " + createdJob.Company + "</strong><p>Title: " + createdJob.Title + "</p><p>Location: " + createdJob.Location + "</p><p>Apply Link: " + createdJob.Link + "</p>"
+	// 			message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+	// 			client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+	// 			response, err := client.Send(message)
+	// 			if err != nil {
+	// 				log.Println(err)
+	// 			} else {
+	// 				fmt.Println(response.StatusCode)
+	// 				fmt.Println(response.Body)
+	// 				fmt.Println(response.Headers)
+	// 			}
+	
+	// 		}
+	
+	// 	} else {
+	// 		// The client will automatically try to recover from all errors.
+	// 		fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+	// 	}
+	// }
+	
+
+
+
 
 	//=========================================================
 	// gin-gonic route handler
@@ -243,47 +367,47 @@ func main() {
 		})
 	})
 
-		// example route to send emails
-		router.POST("/api/emails", func(c *gin.Context) {
-			type EmailRequest struct {
-				Email string `json:"email"`
-				Location  string  `json:"location"`
-				Title   string  `json:"title"`
-				Company string  `json:"company"`
-				Link string  `json:"link"`
-			}
+	// example route to send emails
+	router.POST("/api/subscriptions/emails", func(c *gin.Context) {
+		type EmailRequest struct {
+			Email string `json:"email"`
+			Location  string  `json:"location"`
+			Title   string  `json:"title"`
+			Company string  `json:"company"`
+			Link string  `json:"link"`
+		}
 
 
-			// get  job info from the request body
-			var emailRequest EmailRequest
-			if err := c.ShouldBindJSON(&emailRequest); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-			fmt.Println("The email address is: ", emailRequest.Email)
+		// get  job info from the request body
+		var emailRequest EmailRequest
+		if err := c.ShouldBindJSON(&emailRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		fmt.Println("The email address is: ", emailRequest.Email)
 	
-			// send email
-			from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
-			subject := "New Job Postings from Your Subscribed Company"
-			to := mail.NewEmail("Example User", emailRequest.Email)
-			plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
-			htmlContent := "<strong>Company: " + emailRequest.Company + "</strong><p>Title: " + emailRequest.Title + "</p><p>Location: " + emailRequest.Location + "</p><p>Apply Link: " + emailRequest.Link + "</p>"
-			message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
-			client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
-			response, err := client.Send(message)
-			if err != nil {
-				log.Println(err)
-			} else {
-				fmt.Println(response.StatusCode)
-				fmt.Println(response.Body)
-				fmt.Println(response.Headers)
-			}
+		// send email
+		from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
+		subject := "New Job Postings from Your Subscribed Company"
+		to := mail.NewEmail("Example User", emailRequest.Email)
+		plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
+		htmlContent := "<strong>Company: " + emailRequest.Company + "</strong><p>Title: " + emailRequest.Title + "</p><p>Location: " + emailRequest.Location + "</p><p>Apply Link: " + emailRequest.Link + "</p>"
+		message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+		client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+		response, err := client.Send(message)
+		if err != nil {
+			log.Println(err)
+		} else {
+			fmt.Println(response.StatusCode)
+			fmt.Println(response.Body)
+			fmt.Println(response.Headers)
+		}
 
 	
-			c.JSON(http.StatusOK, gin.H{
-				"result": "send email successfully!",
-			})
+		c.JSON(http.StatusOK, gin.H{
+			"result": "send email successfully!",
 		})
+	})
 
 	router.Run(":8084")
 
@@ -292,7 +416,7 @@ func main() {
 	// kafka consumer client 
 
 
-	// c, err := kafka.NewConsumer(&kafka.ConfigMap{
+	// consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 	// 	"bootstrap.servers": "kaf1-srv",
 	// 	"group.id":          "myGroup",
 	// 	"auto.offset.reset": "earliest",
@@ -302,28 +426,49 @@ func main() {
 	// 	panic(err)
 	// }
 
-	// c.SubscribeTopics([]string{"test-topic", "^aRegex.*[Tt]opic"}, nil)
+	// consumer.SubscribeTopics([]string{"job-created", "^aRegex.*[Tt]opic"}, nil)
+	// fmt.Println("kafka consumer created!")
 
 	// for {
-	// 	msg, err := c.ReadMessage(-1)
+	// 	fmt.Println("kafka consumer is waiting for new message")
+	// 	msg, err := consumer.ReadMessage(-1)
 	// 	if err == nil {
 	// 		fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
 
 	// 		// TODO: parse the message to a Job struct and get the company
-	// 		var company string
+	// 		var createdJob Job
+	// 		json.Unmarshal(msg.Value, &createdJob)
 
 	// 		// find all the subscription with this company from the Subscription database
-	// 		count, subscriptions := findAllSubscriptionsByCompany(svc, company, "Subscriptions")
+	// 		_, subscriptions := findAllSubscriptionsByCompany(svc, createdJob.Company, "Subscriptions")
 
 	// 		// TODO: send email to every subscriber
+	// 		for _, i := range subscriptions {
+	// 			from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
+	// 			subject := "New Job Postings from Your Subscribed Company"
+	// 			to := mail.NewEmail("Example User", i.Email)
+	// 			plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
+	// 			htmlContent := "<strong>Company: " + createdJob.Company + "</strong><p>Title: " + createdJob.Title + "</p><p>Location: " + createdJob.Location + "</p><p>Apply Link: " + createdJob.Link + "</p>"
+	// 			message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+	// 			client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+	// 			response, err := client.Send(message)
+	// 			if err != nil {
+	// 				log.Println(err)
+	// 			} else {
+	// 				fmt.Println(response.StatusCode)
+	// 				fmt.Println(response.Body)
+	// 				fmt.Println(response.Headers)
+	// 			}
 
+	// 		}
 
 	// 	} else {
 	// 		// The client will automatically try to recover from all errors.
 	// 		fmt.Printf("Consumer error: %v (%v)\n", err, msg)
 	// 	}
 	// }
-	// c.Close()
+
+	// consumer.Close()
 
 }
 

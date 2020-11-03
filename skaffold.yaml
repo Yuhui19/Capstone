@@ -32,6 +32,30 @@ build:
         manual:
           - src: '*.go'
             dest: .
+    - image: xiangjieli/applications
+      context: applications
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.go'
+            dest: . 
+    - image: xiangjieli/profiles
+      context: profiles
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.go'
+            dest: .
+    - image: xiangjieli/subscriptions
+      context: subscriptions
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.go'
+            dest: .                                           
     # - image: xiangjieli/frontend
     #   context: frontend
     #   docker:

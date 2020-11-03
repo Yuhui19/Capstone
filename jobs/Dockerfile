@@ -4,6 +4,7 @@ WORKDIR /app
 COPY . .
 RUN go get -u github.com/gin-gonic/gin
 RUN go get -u gopkg.in/confluentinc/confluent-kafka-go.v1/kafka
+RUN go get -u github.com/satori/go.uuid
 
 
 RUN go get -u github.com/aws/aws-sdk-go/aws

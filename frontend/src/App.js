@@ -249,7 +249,6 @@ const App = (props) => {
         .then(res => {
             const jobs = res.data;
             setData(jobs);
-            return jobs;
         }
     ), [])
     

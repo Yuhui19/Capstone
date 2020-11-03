@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscriptions-depl
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: subscriptions
+  template:
+    metadata:
+      labels:
+        app: subscriptions
+    spec:
+      containers:
+        - name: subscriptions
+          image: xiangjieli/subscriptions
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-access-key-id
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secret-access-key
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: aws-default-region
+                  key: AWS_DEFAULT_REGION            
+            - name: AWS_DEFAULT_OUTPUT
+              valueFrom:
+                secretKeyRef:
+                  name: aws-default-output
+                  key: AWS_DEFAULT_OUTPUT
+            - name: SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sendgrid-api-key
+                  key: SENDGRID_API_KEY
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscriptions-srv
+spec:
+  selector:
+    app: subscriptions
+  ports:
+    - name: port-8084
+      protocol: TCP
+      port: 8084
+      targetPort: 8084
