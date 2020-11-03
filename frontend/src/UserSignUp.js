@@ -90,6 +90,28 @@ export default function UserSignUp() {
                                 variant="outlined"
                                 required
                                 fullWidth
+                                // id="univ"
+                                label="University"
+                                // name="univ"
+                                // autoComplete="univ"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                variant="outlined"
+                                required
+                                fullWidth
+                                // id="major"
+                                label="Major"
+                                // name="major"
+                                // autoComplete="major"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                variant="outlined"
+                                required
+                                fullWidth
                                 // id="email"
                                 label="Email Address"
                                 // name="email"
@@ -111,7 +133,7 @@ export default function UserSignUp() {
                         <Grid item xs={12}>
                             <FormControlLabel
                                 control={<Checkbox value="allowExtraEmails" color="primary" />}
-                                label="I want to receive position updates via email when I subscribe one company."
+                                label="I want to receive position updates via email when I subscribe a company."
                             />
                         </Grid>
                     </Grid>
