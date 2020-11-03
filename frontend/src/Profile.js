@@ -40,12 +40,15 @@ import FormControl from '@material-ui/core/FormControl';
 import Paper from '@material-ui/core/Paper';
 import userEvent from "@testing-library/user-event";
 import {useDropzone} from 'react-dropzone';
-import Dialog from "@material-ui/core/Dialog";
-import MuiDialogTitle from "@material-ui/core/DialogTitle";
 import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from "@material-ui/icons/Close";
-import MuiDialogContent from "@material-ui/core/DialogContent";
-import MuiDialogActions from "@material-ui/core/DialogActions";
+
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 function Copyright() {
     return (
@@ -151,41 +154,53 @@ const styles = (theme) => ({
     },
 });
 
-const DialogTitle = withStyles(styles)((props) => {
+const SubDialogTitle = withStyles(styles)((props) => {
     const { children, classes, onClose, ...other } = props;
     return (
-        <MuiDialogTitle disableTypography className={classes.root} {...other}>
+        <DialogTitle disableTypography className={classes.root} {...other}>
             <Typography variant="h5">{children}</Typography>
             {onClose ? (
                 <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
                     <CloseIcon />
                 </IconButton>
             ) : null}
-        </MuiDialogTitle>
+        </DialogTitle>
     );
 });
 
-const DialogContent = withStyles((theme) => ({
+const SubDialogContent = withStyles((theme) => ({
     root: {
         padding: theme.spacing(2),
     },
-}))(MuiDialogContent);
+}))(DialogContent);
 
-const DialogActions = withStyles((theme) => ({
+const SubDialogActions = withStyles((theme) => ({
     root: {
         margin: 0,
         padding: theme.spacing(1),
     },
-}))(MuiDialogActions);
+}))(DialogActions);
 
 function Profile() {
+
+    //subscript delete button action
     const [remove, setDelete] = React.useState(false);
     const handleDeleteClick = () => {
         setDelete(true);
     };
-    const handleClose = () => {
+    const handleDeleteClose = () => {
         setDelete(false);
     };
+
+    //edit button action
+    const [open, setOpen] = React.useState(false);
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+    const handleEditClose = () => {
+        setOpen(false);
+    };
+
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -231,12 +246,65 @@ function Profile() {
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             Email
                         </Typography>
-                        <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
+                        {/* <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             Expected Graduate Date
-                        </Typography>
-                        <Button variant="contained" color="primary">
+                        </Typography> */}
+                        <br></br>
+                        <Button variant="contained" color="primary" onClick={handleClickOpen}>
                             Edit
                         </Button>
+                        <Dialog open={open} onClose={handleEditClose}>
+                            <DialogTitle>
+                                Edit Profile
+                            </DialogTitle>
+                            <DialogContent>
+                                {/* <DialogContentText>
+                                    To subscribe to this website, please enter your email address here. We will send updates
+                                    occasionally.
+                                </DialogContentText> */}
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="fname"
+                                    label="First Name"
+                                    type="fname"
+                                    fullWidth
+                                />
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="lname"
+                                    label="Last Name"
+                                    type="lname"
+                                    fullWidth
+                                />
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="univ"
+                                    label="University"
+                                    type="univ"
+                                    fullWidth
+                                />
+                                <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="major"
+                                    label="Major"
+                                    type="major"
+                                    fullWidth
+                                />
+                            </DialogContent>
+                            <br></br>
+                            <DialogActions>
+                                <Button onClick={handleEditClose} color="primary">
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleEditClose} variant="contained" color="primary">
+                                    Update
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </Container>
                 </div>
                 <Container className={useStyles().statusGrid} maxWidth="sm">
@@ -290,19 +358,22 @@ function Profile() {
                                         {company}
                                     </ListItemText>
                                     <DeleteIcon onClick={handleDeleteClick}/>
-                                    <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={remove} fullWidth={true}>
-                                        <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+                                    <Dialog onClose={handleDeleteClose} aria-labelledby="customized-dialog-title" open={remove} fullWidth={true}>
+                                        <SubDialogTitle id="customized-dialog-title" onClose={handleDeleteClose}>
                                             Do you want to delete this subscription?
-                                        </DialogTitle>
-                                        <DialogContent dividers>
+                                        </SubDialogTitle>
+                                        <SubDialogContent dividers>
                                             <Typography>test</Typography>
-                                        </DialogContent>
+                                        </SubDialogContent>
                                     </Dialog>
                                 </ListItem>
                             ))}
                         </List>
                     </Card>
                 </Container>
+                <footer className={useStyles().footer}>
+                    <Copyright />
+                </footer>
             </main>
         </React.Fragment>
     )
