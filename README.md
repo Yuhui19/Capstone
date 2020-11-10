@@ -1,4 +1,4 @@
-# Capstone Project Proposal 
+# TechCareer Hub 
 (expected to complete in Dec. 2020)
 
 Xiangjie(Jack) Li ( u1292552 ), Yuhui Zhang ( u1271690 )
