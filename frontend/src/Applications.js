@@ -11,7 +11,7 @@ import './App.css';
 import './bootstrap.min.css'
 import Button from '@material-ui/core/Button';
 import info from './linkedin_output.json'
-import application from './application.json';
+// import application from './application.json';
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -39,6 +39,10 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import {FormControl} from "@material-ui/core";
+import getProfile from './api/get-profile';
+import getApplications from './api/get-applications';
+import setApplicationStatus from './api/set-application-status';
+
 
 function Copyright() {
     return (
@@ -157,10 +161,39 @@ function Applications() {
     const style = useStyles();
     const [age, setAge] = React.useState('');
 
+
+    const [profile, setProfile] = React.useState({"profile": {}});
+
+    React.useEffect(()=> 
+        getProfile()
+        .then(res => {
+            const profileData = res.data;
+            setProfile(profileData.profile);
+        }
+    ), [])
+
+    const [applications, setApplications] = React.useState({"data": []});
+
+    React.useEffect(()=> 
+        getApplications()
+        .then(res => {
+            const applicationsData = res.data;
+            setApplications(applicationsData);
+        }
+    ), [])
+
     // const handleChange = (event, row) => {
     //     setAge(event.target.value);
     //     if
     // };
+
+
+    async function handleStatusChange(applicationId, statusCode) {
+        await setApplicationStatus(applicationId, statusCode);
+    }
+
+
+
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -195,19 +228,19 @@ function Applications() {
                 <div>
                     <Container maxWidth="sm">
                         <Typography component="h6" variant="h4" color="textPrimary" gutterBottom>
-                            Name
+                            {profile.name}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            University
+                            {profile.university}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            Major
+                            {profile.major}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            Email
+                            {profile.email}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            Expected Graduate Date
+                            {profile.graduateDate}
                         </Typography>
                     </Container>
                 </div>
@@ -226,16 +259,16 @@ function Applications() {
                             </TableHead>
                             <TableBody>
                                 {/*{rows.map(() => (*/}
-                                {application.data.map((row)=>(
-                                    <StyledTableRow key={row.company}>
+                                {applications.data.map((application)=>(
+                                    <StyledTableRow key={application.id}>
                                         <StyledTableCell component="th" scope="row">
-                                            {row.company}
+                                            {application.company}
                                         </StyledTableCell>
-                                        <StyledTableCell align="left">{row.role}</StyledTableCell>
+                                        <StyledTableCell align="left">{application.title}</StyledTableCell>
                                         <StyledTableCell align="left">
-                                            <Link href={row.link}>Link</Link>
+                                            <Link href={application.link}>Link</Link>
                                         </StyledTableCell>
-                                        <StyledTableCell align="left">{row.dateApplied}</StyledTableCell>
+                                        <StyledTableCell align="left">{application.date}</StyledTableCell>
                                         {/*<StyledTableCell align="left">{row.status}</StyledTableCell>*/}
                                         <StyledTableCell align="left">
                                             {/*{row.status}*/}
@@ -258,7 +291,7 @@ function Applications() {
                                                 {/*<StyledTableCell align="left">*/}
                                                 {/*    {row.status}*/}
                                                 {/*</StyledTableCell>*/}
-                                                <Select defaultValue={1}>
+                                                <Select defaultValue={application.statusCode} onChange={async (e) => handleStatusChange(application.id, e.target.value)}>
                                                     <MenuItem value={1}>Applied</MenuItem>
                                                     <MenuItem value={2}>Online Assessment</MenuItem>
                                                     <MenuItem value={3}>Phone Interview</MenuItem>

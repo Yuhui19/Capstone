@@ -213,68 +213,9 @@ func main() {
 	// Create DynamoDB client
 	svc := dynamodb.New(mySession)
 
+
+	// run jobCreatedListener in a Goroutine
 	go jobCreatedListener(svc)
-
-
-	//========================
-	// Kafka client
-
-	// consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-	// 	"bootstrap.servers": "kaf1-srv",
-	// 	"group.id":          "myGroup",
-	// 	"auto.offset.reset": "earliest",
-	// })
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// consumer.SubscribeTopics([]string{"job-created", "^aRegex.*[Tt]opic"}, nil)
-	// fmt.Println("kafka consumer created!")
-
-	
-		
-	// for {
-	// 	fmt.Println("kafka consumer is waiting for new message")
-	// 	msg, err := consumer.ReadMessage(-1)
-	// 	if err == nil {
-	// 		fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
-	
-	// 		// parse the message to a Job struct and get the company
-	// 		var createdJob Job
-	// 		json.Unmarshal(msg.Value, &createdJob)
-	
-	// 		// find all the subscription with this company from the Subscription database
-	// 		_, subscriptions := findAllSubscriptionsByCompany(svc, createdJob.Company, "Subscriptions")
-	
-	// 		// TODO: send email to every subscriber
-	// 		for _, i := range subscriptions {
-	// 			from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
-	// 			subject := "New Job Postings from Your Subscribed Company"
-	// 			to := mail.NewEmail("Example User", i.Email)
-	// 			plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
-	// 			htmlContent := "<strong>Company: " + createdJob.Company + "</strong><p>Title: " + createdJob.Title + "</p><p>Location: " + createdJob.Location + "</p><p>Apply Link: " + createdJob.Link + "</p>"
-	// 			message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
-	// 			client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
-	// 			response, err := client.Send(message)
-	// 			if err != nil {
-	// 				log.Println(err)
-	// 			} else {
-	// 				fmt.Println(response.StatusCode)
-	// 				fmt.Println(response.Body)
-	// 				fmt.Println(response.Headers)
-	// 			}
-	
-	// 		}
-	
-	// 	} else {
-	// 		// The client will automatically try to recover from all errors.
-	// 		fmt.Printf("Consumer error: %v (%v)\n", err, msg)
-	// 	}
-	// }
-	
-
-
 
 
 	//=========================================================
@@ -298,26 +239,34 @@ func main() {
 		}
 		fmt.Println("The subscribed company is: ", createSubscriptionRequest.Company)
 
+		// TODO: find if the user has already subscribed to the company
+		if canFindSubscriptionByEmailAndCompany(svc, email, createSubscriptionRequest.Company, "Subscriptions") {
+			// http response
+			c.JSON(http.StatusBadRequest, gin.H{
+				"result": "The current user has subscribed to this company!",
+			})
+		} else {
+			// create an subscription entry and store it to the database
+			uid := uuid.Must(uuid.NewV4())
+			currentTime := time.Now()
+			subscription := Subscription{
+				Id: uid.String(),
+				Email: email,
+				Date: currentTime.Format("2006-01-02"),
+				Company: createSubscriptionRequest.Company,
+			}
+			createNewSubscription(svc, subscription, "Subscriptions")
 
-		// create an subscription entry and store it to the database
-		uid := uuid.Must(uuid.NewV4())
-		currentTime := time.Now()
-		subscription := Subscription{
-			Id: uid.String(),
-			Email: email,
-			Date: currentTime.Format("2006-01-02"),
-			Company: createSubscriptionRequest.Company,
+
+			// http response
+			c.JSON(http.StatusOK, gin.H{
+				"id": subscription.Id,
+				"email": subscription.Email,
+				"date": subscription.Date,
+				"company": subscription.Company,
+			})
 		}
-		createNewSubscription(svc, subscription, "Subscriptions")
 
-
-		// http response
-		c.JSON(http.StatusOK, gin.H{
-			"id": subscription.Id,
-			"email": subscription.Email,
-			"date": subscription.Date,
-			"company": subscription.Company,
-		})
 	})
 
 
@@ -412,64 +361,6 @@ func main() {
 	router.Run(":8084")
 
 
-	//=======================================================
-	// kafka consumer client 
-
-
-	// consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-	// 	"bootstrap.servers": "kaf1-srv",
-	// 	"group.id":          "myGroup",
-	// 	"auto.offset.reset": "earliest",
-	// })
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// consumer.SubscribeTopics([]string{"job-created", "^aRegex.*[Tt]opic"}, nil)
-	// fmt.Println("kafka consumer created!")
-
-	// for {
-	// 	fmt.Println("kafka consumer is waiting for new message")
-	// 	msg, err := consumer.ReadMessage(-1)
-	// 	if err == nil {
-	// 		fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
-
-	// 		// TODO: parse the message to a Job struct and get the company
-	// 		var createdJob Job
-	// 		json.Unmarshal(msg.Value, &createdJob)
-
-	// 		// find all the subscription with this company from the Subscription database
-	// 		_, subscriptions := findAllSubscriptionsByCompany(svc, createdJob.Company, "Subscriptions")
-
-	// 		// TODO: send email to every subscriber
-	// 		for _, i := range subscriptions {
-	// 			from := mail.NewEmail("Techcareer Hub", "noreply@techcareerhub.com")
-	// 			subject := "New Job Postings from Your Subscribed Company"
-	// 			to := mail.NewEmail("Example User", i.Email)
-	// 			plainTextContent := "Here is lastest job posted on linkedin by the companies you have subscribed"
-	// 			htmlContent := "<strong>Company: " + createdJob.Company + "</strong><p>Title: " + createdJob.Title + "</p><p>Location: " + createdJob.Location + "</p><p>Apply Link: " + createdJob.Link + "</p>"
-	// 			message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
-	// 			client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
-	// 			response, err := client.Send(message)
-	// 			if err != nil {
-	// 				log.Println(err)
-	// 			} else {
-	// 				fmt.Println(response.StatusCode)
-	// 				fmt.Println(response.Body)
-	// 				fmt.Println(response.Headers)
-	// 			}
-
-	// 		}
-
-	// 	} else {
-	// 		// The client will automatically try to recover from all errors.
-	// 		fmt.Printf("Consumer error: %v (%v)\n", err, msg)
-	// 	}
-	// }
-
-	// consumer.Close()
-
 }
 
 
@@ -551,6 +442,55 @@ func findAllSubscriptionsByEmail(svc *dynamodb.DynamoDB, email string, tableName
 	}
 
 	return numItems, _subscriptions
+
+}
+
+
+func canFindSubscriptionByEmailAndCompany(svc *dynamodb.DynamoDB, email string, company string, tableName string) bool {
+
+	filt := expression.Name("email").Equal(expression.Value(email))
+	proj := expression.NamesList(expression.Name("id"), expression.Name("email"), expression.Name("company"), expression.Name("date"))
+	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
+	if err != nil {
+		fmt.Println("Got error building expression:")
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	// Build the query input parameters
+	params := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		ProjectionExpression:      expr.Projection(),
+		TableName:                 aws.String(tableName),
+	}
+
+	// Make the DynamoDB Query API call
+	result, err := svc.Scan(params)
+	if err != nil {
+		fmt.Println("Query API call failed:")
+		fmt.Println((err.Error()))
+		os.Exit(1)
+	}
+
+	
+	for _, i := range result.Items {
+		item := Subscription{}
+
+		err = dynamodbattribute.UnmarshalMap(i, &item)
+
+		if err != nil {
+			fmt.Println("Got error unmarshalling:")
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
+		if item.Company == company {
+			return true
+		}
+	}
+	return false
 
 }
 

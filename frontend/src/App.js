@@ -6,7 +6,8 @@ import './bootstrap.min.css'
 import Button from '@material-ui/core/Button';
 // import info from './linkedin_output.json'
 import getJobs from './api/get-jobs';
-// const axios = require('axios');
+import applyJob from './api/apply-job';
+import subscribeCompany from './api/subscribe-company';
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -144,6 +145,10 @@ const DialogActions = withStyles((theme) => ({
     },
 }))(MuiDialogActions);
 
+
+
+
+
 function CardsLayout(props) {
     const index = props.num;
     const info = props.data;
@@ -168,8 +173,17 @@ function CardsLayout(props) {
         imagePath = "images/default.png";
 
     const [iconStatus, setIconStatus] = React.useState(false)
-    const iconStatusData = (event, props) => {
+
+    async function iconStatusData(event, props) {
         setIconStatus(!iconStatus)
+        await subscribeCompany(info.company)
+    }
+
+    const [status, setStatus] = React.useState(7);
+
+    async function handleSelectChange(event) {
+        await applyJob(info.id, event.target.value);
+        setStatus(event.target.value)
     }
 
     return <Grid item xs={12} sm={6} md={4}>
@@ -214,7 +228,7 @@ function CardsLayout(props) {
                             {/*<StyledTableCell align="left">*/}
                             {/*    {row.status}*/}
                             {/*</StyledTableCell>*/}
-                            <Select defaultValue={7}>
+                            <Select value={status} onChange={handleSelectChange}>
                                 <MenuItem value={1}>Applied</MenuItem>
                                 <MenuItem value={2}>Online Assessment</MenuItem>
                                 <MenuItem value={3}>Phone Interview</MenuItem>
@@ -269,7 +283,7 @@ const App = (props) => {
                         <Grid item>
                             {/*<Link to="/UserSignIn">*/}
                             <Button variant="contained" color="primary" href="/UserSignIn">
-                                    Sign in
+                                Sign in
                             </Button>
                             {/*</Link>*/}
                         </Grid>

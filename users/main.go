@@ -45,11 +45,11 @@ type Claims struct {
 func CORSMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
 
-        c.Header("Access-Control-Allow-Origin", "*")
+        c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
         c.Header("Access-Control-Allow-Credentials", "true")
-        c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-        c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
-
+        c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, Set-Cookie")
+		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+		c.Header("Access-Control-Expose-Headers", "Set-Cookie")   
         if c.Request.Method == "OPTIONS" {
             c.AbortWithStatus(204)
             return
@@ -143,8 +143,17 @@ func main() {
 
 		// Finally, we set the client cookie for "token" as the JWT we just generated
 		// we also set an expiry time which is the same as the token itself
-		c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "techcareerhub.dev", true, true)
-
+		// c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "techcareerhub.dev", false, false)
+		http.SetCookie(c.Writer,&http.Cookie{
+			Name:       "token",  //Your cookie's name
+			Value:      tokenString,  //cookie value
+			Path:       "/",
+			Domain:     "techcareerhub.dev",
+			MaxAge:     int(expirationTime.Unix() * 1000),
+			Secure:     true,
+			HttpOnly:   false,
+			SameSite:   4,  // samesite=none
+		})
 		
 		c.JSON(http.StatusOK, gin.H{
 			"result": "create a new user successfully!",
@@ -207,8 +216,17 @@ func main() {
 
 		// Finally, we set the client cookie for "token" as the JWT we just generated
 		// we also set an expiry time which is the same as the token itself
-		c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "techcareerhub.dev", true, true)
-
+		// c.SetCookie("token", tokenString, int(expirationTime.Unix() * 1000), "/", "techcareerhub.dev", false, false)
+		http.SetCookie(c.Writer,&http.Cookie{
+			Name:       "token",  //Your cookie's name
+			Value:      tokenString,  //cookie value
+			Path:       "/",
+			Domain:     "techcareerhub.dev",
+			MaxAge:     int(expirationTime.Unix() * 1000),
+			Secure:     true,
+			HttpOnly:   false,
+			SameSite:   4,    // samesite = none
+		})
 		c.JSON(http.StatusOK, gin.H{
 			"result": "you have logged in!",
 		})
@@ -218,7 +236,7 @@ func main() {
 
 
 	router.POST("/api/users/signout", func(c *gin.Context) {
-		c.SetCookie("token", "", 0, "/", "techcareerhub.dev", true, true)
+		c.SetCookie("token", "", 0, "/", "techcareerhub.dev", false, false)
 		c.JSON(http.StatusOK, gin.H{
 			"result": "you have logged out!",
 		})

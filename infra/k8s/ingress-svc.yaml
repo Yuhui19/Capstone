@@ -3,9 +3,13 @@ kind: Ingress
 metadata:
   name: ingress-service
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/use-regex: 'true'
     nginx.ingress.kubernetes.io/enable-cors: 'true'
+    nginx.ingress.kubernetes.io/cors-allow-credentials: 'true'
+    nginx.ingress.kubernetes.io/cors-allow-origin: 'http://localhost:3000'
+    nginx.ingress.kubernetes.io/cors-allow-methods: 'GET, PUT, POST, DELETE, PATCH, OPTIONS'
+    nginx.ingress.kubernetes.io/cors-allow-headers: 'DNT, User-Agent, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, set-cookie, cookie, Keep-Alive, X-CustomHeader, X-Requested-With,If-Modified-Since'
 spec:
   rules:
     - host: techcareerhub.dev

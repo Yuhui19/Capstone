@@ -49,6 +49,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import getProfile from './api/get-profile';
+import getSubscriptions from './api/get-subscriptions';
 
 function Copyright() {
     return (
@@ -201,6 +203,51 @@ function Profile() {
         setOpen(false);
     };
 
+
+    const [profile, setProfile] = React.useState({"profile": {}});
+    const [jobHuntingType, setJobHuntingType] = React.useState(2);
+
+    React.useEffect(()=> 
+        getProfile()
+        .then(res => {
+            const profileData = res.data;
+            setProfile(profileData.profile);
+            var currJobType;
+            if (profileData.profile.jobHuntingType == "an internship") {
+                currJobType = 1;
+            }
+            else if (profileData.profile.jobHuntingType == "a full-time job") {
+                currJobType = 2;
+            }
+            else if (profileData.profile.jobHuntingType == "a part-time job") {
+                currJobType = 3;
+            }
+            else {
+                currJobType = 4;
+            }
+            setJobHuntingType(currJobType);
+            console.log("setting the current job type as " + currJobType);
+        }
+    ), [])
+
+    const [subscriptions, setSubscriptions] = React.useState({"data": []});
+
+    React.useEffect(()=> 
+        getSubscriptions()
+        .then(res => {
+            const subscriptionsData = res.data;
+            setSubscriptions(subscriptionsData);
+        }
+    ), [])
+
+
+
+    // function handleSelectChange(event) {
+    //     setEmail(event.target.value)
+    // }
+
+
+
     return (
         <React.Fragment>
             <CssBaseline/>
@@ -235,16 +282,16 @@ function Profile() {
                 <div>
                     <Container maxWidth="sm">
                         <Typography component="h6" variant="h4" color="textPrimary" gutterBottom>
-                            Name
+                            {profile.name}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            University
+                            {profile.university}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            Major
+                            {profile.major}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
-                            Email
+                            {profile.email}
                         </Typography>
                         {/* <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             Expected Graduate Date
@@ -313,11 +360,11 @@ function Profile() {
                             I am looking for
                         </Typography>
                         <FormControl className={useStyles().lookingForOptions} variant="outlined">
-                            <Select defaultValue={20}>
-                                <MenuItem value={10}>an internship</MenuItem>
-                                <MenuItem value={20}>a full-time job</MenuItem>
-                                <MenuItem value={30}>a part-time job</MenuItem>
-                                <MenuItem value={40}>a career break</MenuItem>
+                            <Select value={jobHuntingType}>
+                                <MenuItem value={1}>an internship</MenuItem>
+                                <MenuItem value={2}>a full-time job</MenuItem>
+                                <MenuItem value={3}>a part-time job</MenuItem>
+                                <MenuItem value={4}>a career break</MenuItem>
                             </Select>
                         </FormControl>
                     </Card>
@@ -351,11 +398,11 @@ function Profile() {
                             Subscription
                         </Typography>
                         <List>
-                            {subscription.data.map((company)=>(
-                                <ListItem key{...company}>
+                            {subscriptions.data.map((subscription)=>(
+                                <ListItem key={subscription.id}>
                                     {/*<ListItemAvatar src={"../public/images/" + company + ".png"} />*/}
                                     <ListItemText spacing={2}>
-                                        {company}
+                                        {subscription.company}
                                     </ListItemText>
                                     <DeleteIcon onClick={handleDeleteClick}/>
                                     <Dialog onClose={handleDeleteClose} aria-labelledby="customized-dialog-title" open={remove} fullWidth={true}>

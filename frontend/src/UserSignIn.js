@@ -12,6 +12,8 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import signin from './api/signin';
+import currentUser from './api/current-user';
 
 function Copyright() {
     return (
@@ -50,6 +52,28 @@ const useStyles = makeStyles((theme) => ({
 export default function UserSignIn() {
     const classes = useStyles();
 
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
+
+    async function handleClick(event) {
+        const signRes = await signin(email, password)
+        // console.log("if has cookie : " + signRes.headers.has('Set-Cookie'))
+        // console.log("if has content-type : " + signRes.headers.has('Content-Type'))
+        console.log(signRes.headers)
+
+        const res = await currentUser();
+        const data = res.data
+        console.log("current user is: " +  data.email)
+    }
+
+    function handleEmailChange(event) {
+        setEmail(event.target.value)
+    }
+
+    function handlePasswordChange(event) {
+        setPassword(event.target.value)
+    }
+
     return (
         <Container component="main" maxWidth="xs">
             <CssBaseline />
@@ -68,6 +92,7 @@ export default function UserSignIn() {
                         fullWidth
                         // id="email"
                         label="Email Address"
+                        onChange={handleEmailChange}
                         // name="email"
                         // autoComplete="email"
                         // autoFocus
@@ -79,6 +104,7 @@ export default function UserSignIn() {
                         fullWidth
                         // name="password"
                         label="Password"
+                        onChange={handlePasswordChange}
                         // type="password"
                         // id="password"
                         // autoComplete="current-password"
@@ -88,12 +114,13 @@ export default function UserSignIn() {
                     {/*    label="Remember me"*/}
                     {/*/>*/}
                     <Button
-                        type="submit"
+                        // type="submit"
                         fullWidth
                         variant="contained"
                         color="primary"
                         className={classes.submit}
-                        href="/Profile"
+                        onClick={handleClick}
+                        // href="/Profile"
                     >
                         Sign In
                     </Button>

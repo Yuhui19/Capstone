@@ -30,6 +30,7 @@ var jwtKey = []byte("my_secret_key")
 // Binding from JSON
 type CreateApplicationRequest struct {
 	JobId     string `json:"jobId" binding:"required"`
+	StatusCode int   `json:"statusCode" binding:"required"`
 }
 
 type UpdateStatusRequest struct {
@@ -157,7 +158,7 @@ func main() {
 		email := c.MustGet("currentUser").(string)
 		fmt.Println("The current user is: ", email)
 
-		// get jobId from the request body
+		// get jobId and statusCode from the request body
 		var createApplicationRequest CreateApplicationRequest
 		if err := c.ShouldBindJSON(&createApplicationRequest); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -176,39 +177,73 @@ func main() {
 
 
 		// check if the user already applied for this role
-		if canfindOneApplicationByJobAndEmail(svc, job.Company, email, job.Title, "Applications") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You have applied for this job"})
-			return
+		// if so, update the application status
+		// if not, create new application
+		prev_application, ok := findOneApplicationByLinkAndEmail(svc, job.Link, job.Company, job.Title, email, "Applications") 
+		if ok {
+			fmt.Println("we are going to update the statusCode of application " + prev_application.Id + " to " + string(createApplicationRequest.StatusCode))
+			ok := updateApplicationStatus(svc, prev_application.Id, createApplicationRequest.StatusCode, email, "Applications")
+			if !ok {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update application"})
+				return
+			}
+
+			// http response
+			c.JSON(http.StatusOK, gin.H{
+				"id": prev_application.Id,
+				"email": prev_application.Email,
+				"status": prev_application.Status,
+				"statusCode": prev_application.StatusCode,
+				"date": prev_application.Date,
+				"company": prev_application.Company,
+				"title": prev_application.Title,
+				"link": prev_application.Link,
+				"result": "You've updated status of this application",
+			})
+		} else {
+			// create an application object and store it to the database
+			uid := uuid.Must(uuid.NewV4())
+			currentTime := time.Now()
+			var status string
+			if createApplicationRequest.StatusCode == 1 {
+				status = "applied"
+			} else if createApplicationRequest.StatusCode == 2 {
+				status = "online assessment"
+			} else if createApplicationRequest.StatusCode == 3 {
+				status = "phone interview"
+			} else if createApplicationRequest.StatusCode == 4 {
+				status = "onsite interview"
+			} else if createApplicationRequest.StatusCode == 5 {
+				status = "offer"
+			} else {
+				status = "rejected"
+			}
+			application := Application{
+				Id: uid.String(),
+				Email: email,
+				Status: status,
+				StatusCode: createApplicationRequest.StatusCode,
+				Date: currentTime.Format("2006-01-02"),
+				Company: job.Company,
+				Title: job.Title,
+				Link: job.Link,
+			}
+			createNewApplication(svc, application, "Applications")
+
+
+			// http response
+			c.JSON(http.StatusOK, gin.H{
+				"id": application.Id,
+				"email": application.Email,
+				"status": application.Status,
+				"statusCode": application.StatusCode,
+				"date": application.Date,
+				"company": application.Company,
+				"title": application.Title,
+				"link": application.Link,
+				"result": "You've created this application successfully!",
+			})			
 		}
-
-
-		// create an application object and store it to the database
-		uid := uuid.Must(uuid.NewV4())
-		currentTime := time.Now()
-		application := Application{
-			Id: uid.String(),
-			Email: email,
-			Status: "applied",
-			StatusCode: 1,
-			Date: currentTime.Format("2006-01-02"),
-			Company: job.Company,
-			Title: job.Title,
-			Link: job.Link,
-		}
-		createNewApplication(svc, application, "Applications")
-
-
-		// http response
-		c.JSON(http.StatusOK, gin.H{
-			"id": application.Id,
-			"email": application.Email,
-			"status": application.Status,
-			"statusCode": application.StatusCode,
-			"date": application.Date,
-			"company": application.Company,
-			"title": application.Title,
-			"link": application.Link,
-		})
 	})
 
 
@@ -323,11 +358,13 @@ func createNewApplication(svc *dynamodb.DynamoDB, newApplication Application, ta
 
 
 
-func canfindOneApplicationByJobAndEmail(svc *dynamodb.DynamoDB, company string, email string, 
-	title string, tableName string) bool {
+func findOneApplicationByLinkAndEmail(svc *dynamodb.DynamoDB, link string, company string, title string, email string, 
+	tableName string) (prev_application Application, ok bool) {
+
+    dummy_item := Application{}
 
 	filt := expression.Name("email").Equal(expression.Value(email))
-	proj := expression.NamesList(expression.Name("email"), expression.Name("company"), expression.Name("title"))
+	proj := expression.NamesList(expression.Name("id"), expression.Name("email"), expression.Name("link"), expression.Name("company"), expression.Name("title"))
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 	if err != nil {
 		fmt.Println("Got error building expression:")
@@ -352,7 +389,6 @@ func canfindOneApplicationByJobAndEmail(svc *dynamodb.DynamoDB, company string, 
 		os.Exit(1)
 	}
 
-	numItems := 0
 
 	for _, i := range result.Items {
 		item := Application{}
@@ -366,14 +402,14 @@ func canfindOneApplicationByJobAndEmail(svc *dynamodb.DynamoDB, company string, 
 		}
 
 		// Which ones had a higher rating than minimum?
-		if (item.Company == company && item.Title == title) {
+		if ((item.Link == link && item.Company == company) && item.Title == title) {
 			// Or it we had filtered by rating previously:
 			//   if item.Year == year {
-			numItems++
+			return item, true
 		}
 	}
 
-	return numItems == 1
+	return dummy_item, false
 
 }
 
