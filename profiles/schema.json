@@ -1,29 +1,28 @@
 {
-    "email": "xiangjieli1997@gmail.com",
-    "name": "Xiangjie Li",
-    "major": "computer science",
+    "name": "Xiangjie",
+    "major": "computer science",  
     "currentDegree": "master's",
     "university": "University of Utah",
-    "expectedGraduateDate": "2020-12-11",
-    "jobHuntingType": "a full-time job",
-    "resume": "s3-link",
+    "graduateDate": "2020-12-11",
+    "jobHuntingType": "a part-time job",
+    "resume": "https://techcareerhub-resumes.s3.amazonaws.com/resume_xiangjieli_fulltime.pdf",
     "experience": [
         {
             "company": "Salesforce",
             "title": "software engineer intern",
-            "startMonth": "05",
-            "startYear": "2020",
-            "endMonth": "08",
-            "endYear": "2020",
+            "startMonth": 5,
+            "startYear": 2020,
+            "endMonth": 8,
+            "endYear": 2020,
             "description": "I worked for commerce cloud team..."
         },
         {
             "company": "University of Utah",
             "title": "computer science tutor",
-            "startMonth": "02",
-            "startYear": "2020",
-            "endMonth": "05",
-            "endYear": "2020",
+            "startMonth": 2,
+            "startYear": 2020,
+            "endMonth": 5,
+            "endYear": 2020,
             "description": "I tutored student-athletes..."
         }
     ]

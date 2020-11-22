@@ -289,22 +289,26 @@ func main() {
 
 
 	// delete(cancel) one subscription
-	router.DELETE("/api/subscriptions", func(c *gin.Context) {
+	router.DELETE("/api/subscriptions/:id", func(c *gin.Context) {
 
 		// get the user email from the JWT
 		email := c.MustGet("currentUser").(string)
 		fmt.Println("The current user is: ", email)
 		
-		// get subscription id from the request body
-		var cancelSubscriptionRequest CancelSubscriptionRequest
-		if err := c.ShouldBindJSON(&cancelSubscriptionRequest); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		fmt.Println("The subscription id is: ", cancelSubscriptionRequest.Id)
+		// var cancelSubscriptionRequest CancelSubscriptionRequest
+		// if err := c.ShouldBindJSON(&cancelSubscriptionRequest); err != nil {
+		// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		// 	return
+		// }
+
+		// get subscription id from the url params
+		subscriptionId := c.Param("id")
+
+
+		fmt.Println("The subscription id is: ", subscriptionId)
 
 		// delete the subscription info in the database
-		ok := deleteSubscription(svc, cancelSubscriptionRequest.Id, "Subscriptions")
+		ok := deleteSubscription(svc, subscriptionId, "Subscriptions")
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to cancel subscription"})
 			return
@@ -312,7 +316,7 @@ func main() {
 
 		c.JSON(http.StatusOK, gin.H{
 			"result": "cancel the subscription successfully!",
-			"id": cancelSubscriptionRequest.Id,
+			"id": subscriptionId,
 		})
 	})
 

@@ -46,6 +46,7 @@ type Application struct {
 	Company     string    `json:"company"`
 	Title       string    `json:"title"`
 	Link        string    `json:"link"`
+	JobId       string    `json:"jobId"`
 }
 
 type Job struct {
@@ -227,6 +228,7 @@ func main() {
 				Company: job.Company,
 				Title: job.Title,
 				Link: job.Link,
+				JobId: job.Id,
 			}
 			createNewApplication(svc, application, "Applications")
 
@@ -241,6 +243,7 @@ func main() {
 				"company": application.Company,
 				"title": application.Title,
 				"link": application.Link,
+				"jobId": application.JobId,
 				"result": "You've created this application successfully!",
 			})			
 		}

@@ -14,6 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	// "github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go/service/s3"
 
 	"github.com/dgrijalva/jwt-go"
 	// "encoding/json"
@@ -30,13 +32,14 @@ type Profile struct {
 	Email     string `json:"email"`
 	Name string `json:"name" binding:"required"`
 	Major string `json:"major" binding:"required"`
-	CurrentDegree string `json:"currentDegree" binding:"required"`
 	University string `json:"university" binding:"required"`
-	GraduateDate string `json:"graduateDate" binding:"required"`
-	JobHuntingType string `json:"jobHuntingType" binding:"required"`
+	CurrentDegree string `json:"currentDegree" binding:"required"`
+	GraduateDate string `json:"graduateDate"`
+	JobHuntingType string `json:"jobHuntingType"`
 	Resume string `json:"resume"`
 	Experience []Experience `json:"experience"`
 }
+
 
 type Experience struct {
 	Company string `json:"company"`
@@ -46,6 +49,24 @@ type Experience struct {
 	EndMonth int `json:"endMonth"`
 	EndYear int `json:"endYear"`
 	Description string `json:"description"`
+}
+
+
+type UpdateProfileBasicRequest struct {
+	Name string `json:"name" binding:"required"`
+	Major string `json:"major" binding:"required"`
+	University string `json:"university" binding:"required"`
+	CurrentDegree string `json:"currentDegree" binding:"required"`
+}
+
+
+type UpdateProfileJobHuntingTypeRequest struct {
+	JobHuntingType string `json:"jobHuntingType" binding:"required"`
+}
+
+
+type UpdateProfileExperienceRequest struct {
+	Experience []Experience `json:"experience" binding:"required"`
 }
 
 
@@ -174,6 +195,7 @@ func main() {
 
 
 
+	// get the profile for current authenticated user
 	router.GET("/api/profiles", func(c *gin.Context) {
 
 		// get the user email from the JWT
@@ -192,6 +214,155 @@ func main() {
 		})
 
 	})
+
+
+	// update user's basic profile info
+	router.PUT("/api/profiles/basic", func(c *gin.Context) {
+
+		// get the user email from the JWT
+		email := c.MustGet("currentUser").(string)
+		fmt.Println("The current user is: ", email)
+
+		// get users' profile basic info from the request body
+		var updateProfileBasicRequest UpdateProfileBasicRequest
+		// check if the profile basic info has been included in the json body
+		if err := c.ShouldBindJSON(&updateProfileBasicRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// update the user's profile from the database, if cannot find such user, return error
+		ok := updateProfileBasic(svc, email, updateProfileBasicRequest.Name, 
+			updateProfileBasicRequest.University, updateProfileBasicRequest.Major, 
+			updateProfileBasicRequest.CurrentDegree,tableName)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update the user's profiel"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"resuult": "update succeed!",
+			"updated_item": updateProfileBasicRequest,
+		})
+	})
+
+
+
+	// update user's jobHuntingType
+	router.PUT("/api/profiles/job_hunting_type", func(c *gin.Context) {
+
+		// get the user email from the JWT
+		email := c.MustGet("currentUser").(string)
+		fmt.Println("The current user is: ", email)
+
+		// get users' jobhuntingType from the request body
+		var updateProfileJobHuntingTypeRequest UpdateProfileJobHuntingTypeRequest
+		// check if the profile basic info has been included in the json body
+		if err := c.ShouldBindJSON(&updateProfileJobHuntingTypeRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+
+		// update the user's profile from the database, if cannot find such user, return error
+		ok := updateProfileJobHuntingType(svc, email, updateProfileJobHuntingTypeRequest.JobHuntingType, tableName)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update the user's job hunting type"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": "update success",
+			"updated_item": updateProfileJobHuntingTypeRequest,
+		})
+	})	
+
+
+	// upload user's resume
+	router.POST("/api/profiles/resume", func(c *gin.Context) {
+
+		// get the user email from the JWT
+		email := c.MustGet("currentUser").(string)
+		fmt.Println("The current user is: ", email)
+
+		// get user's resume file from the multi-part of request
+		formFile, _ , err := c.Request.FormFile("file")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get the file from form-data"})
+			return
+		}
+		// formFile, _ := c.FormFile("file")
+
+		// upload user's resume to AWS S3, get the url
+		s3Svc := s3.New(mySession)
+		bucketName := "techcareerhub-resumes"
+		keyName := email + ".pdf"
+		uploader := s3manager.NewUploaderWithClient(s3Svc)
+		// Upload input parameters
+		upParams := &s3manager.UploadInput{
+			Bucket: aws.String(bucketName),
+			Key:    aws.String(keyName),
+			Body:   formFile,
+			ACL: aws.String("public-read"),
+			ContentType:  aws.String("application/pdf"),
+			ContentDisposition: aws.String("inline"),
+		}
+
+		// Perform an upload
+		_, _err := uploader.Upload(upParams)
+		if _err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to upload the user's resume to s3"})
+			return
+		}
+
+		// get user's resume url
+		resumeUrl := "https://techcareerhub-resumes.s3.amazonaws.com/" + keyName
+
+
+		
+		// update the user's profile in the database, if cannot find such user, return error
+		ok := updateProfileResume(svc, email, resumeUrl, tableName)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update the user's resume url"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": "upload and update success",
+			"resume_url": resumeUrl,
+		})
+	})		
+
+
+
+	// update user's experience
+	router.PUT("/api/profiles/experience", func(c *gin.Context) {
+
+		// get the user email from the JWT
+		email := c.MustGet("currentUser").(string)
+		fmt.Println("The current user is: ", email)
+
+		// get users' experience from the request body
+		var updateProfileExperienceRequest UpdateProfileExperienceRequest
+		// check if the profile experience info has been included in the json body
+		if err := c.ShouldBindJSON(&updateProfileExperienceRequest); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		
+		// update the user's profile in the database, if failed, return error
+		ok := updateProfileExperience(svc, email, updateProfileExperienceRequest.Experience, tableName)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update the user's profile"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"result": "update success",
+			"updated item": updateProfileExperienceRequest,
+		})
+	})			
 
 	router.Run(":8083")
 	
@@ -251,4 +422,172 @@ func createNewProfile(svc *dynamodb.DynamoDB, profile Profile, tableName string)
 		return false;
 	}
 	return true
+}
+
+
+func updateProfileBasic(svc *dynamodb.DynamoDB, email string, name string, university string, major string, degree string, tableName string) bool {
+
+
+	type ProfileKey struct {
+		Email  string    `json:"email"`
+	}
+	key, _err := dynamodbattribute.MarshalMap(ProfileKey{ 
+		Email: email,
+	})
+	if _err != nil {
+		fmt.Println(_err.Error())
+		return false
+	}
+
+	n := "name"
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":n": {
+				S: aws.String(name),
+			},
+			":u": {
+				S: aws.String(university),
+			},
+			":m": {
+				S: aws.String(major),
+			},
+			":d": {
+				S: aws.String(degree),
+			},
+		},
+		ExpressionAttributeNames: map[string]*string{"#nm": &n},
+		TableName: aws.String(tableName),
+		Key: key,
+		ReturnValues:     aws.String("UPDATED_NEW"),
+		UpdateExpression: aws.String("set #nm=:n, university=:u, major=:m, currentDegree=:d"),
+	}
+
+	_, err := svc.UpdateItem(input)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+
+}
+
+
+
+func updateProfileJobHuntingType(svc *dynamodb.DynamoDB, email string, jobHuntingType string, tableName string) bool {
+
+	type ProfileKey struct {
+		Email  string    `json:"email"`
+	}
+	key, _err := dynamodbattribute.MarshalMap(ProfileKey{ 
+		Email: email,
+	})
+	if _err != nil {
+		fmt.Println(_err.Error())
+		return false
+	}
+
+
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":j": {
+				S: aws.String(jobHuntingType),
+			},
+		},
+		// ExpressionAttributeNames: map[string]*string{"#st": &s},
+		TableName: aws.String(tableName),
+		Key: key,
+		ReturnValues:     aws.String("UPDATED_NEW"),
+		UpdateExpression: aws.String("set jobHuntingType=:j"),
+	}
+
+	_, err := svc.UpdateItem(input)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+
+}
+
+
+func updateProfileResume(svc *dynamodb.DynamoDB, email string, resumeUrl string, tableName string) bool {
+
+	type ProfileKey struct {
+		Email  string    `json:"email"`
+	}
+	key, _err := dynamodbattribute.MarshalMap(ProfileKey{ 
+		Email: email,
+	})
+	if _err != nil {
+		fmt.Println(_err.Error())
+		return false
+	}
+
+
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":r": {
+				S: aws.String(resumeUrl),
+			},
+		},
+		// ExpressionAttributeNames: map[string]*string{"#st": &s},
+		TableName: aws.String(tableName),
+		Key: key,
+		ReturnValues:     aws.String("UPDATED_NEW"),
+		UpdateExpression: aws.String("set resume=:r"),
+	}
+
+	_, err := svc.UpdateItem(input)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+
+}
+
+
+
+
+func updateProfileExperience(svc *dynamodb.DynamoDB, email string, experience []Experience, tableName string) bool {
+
+
+	type ProfileKey struct {
+		Email string  `json:"email"`
+	}
+	key, _err := dynamodbattribute.MarshalMap(ProfileKey{ 
+		Email: email,
+	})
+	if _err != nil {
+		fmt.Println(_err.Error())
+		return false
+	}
+
+	// s := "status"
+	av, __err := dynamodbattribute.MarshalList(experience)
+	if __err != nil {
+		fmt.Println("err", __err)
+		return false
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":e": {
+				L: av,
+			},
+		},
+		// ExpressionAttributeNames: map[string]*string{"#st": &s},
+		TableName: aws.String(tableName),
+		Key: key,
+		ReturnValues:     aws.String("UPDATED_NEW"),
+		UpdateExpression: aws.String("set experience = :e"),
+	}
+
+	_, err := svc.UpdateItem(input)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	return true
+
 }

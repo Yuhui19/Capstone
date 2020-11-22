@@ -32,7 +32,7 @@ import Typography from '@material-ui/core/Typography';
 import {makeStyles, withStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
-import {Menu} from "@material-ui/icons";
+import {Menu, ContactSupportOutlined} from "@material-ui/icons";
 import Table from "@material-ui/core/Table";
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -51,6 +51,10 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import getProfile from './api/get-profile';
 import getSubscriptions from './api/get-subscriptions';
+import updateProfileBasic from './api/update-profile-basic'
+import updateProfileJobHuntingType from './api/update-profile-job-hunting-type'
+import updateProfileResume from './api/update-profile-resume'
+import deleteSubscription from './api/delete-subscription'
 
 function Copyright() {
     return (
@@ -127,11 +131,12 @@ function Dropzone(props) {
         noKeyboard: true
     });
 
-    const files = acceptedFiles.map(file => (
-        <li key={file.path}>
-            {file.path} - {file.size} bytes
-        </li>
-    ));
+    const files = acceptedFiles.map(async (file) => {
+        // <li key={file.path}>
+        //     {file.path} - {file.size} bytes
+        // </li>
+        await updateProfileResume(file);
+    });
 
     return (
         <div {...getRootProps({className: 'dropzone'})}>
@@ -185,6 +190,12 @@ const SubDialogActions = withStyles((theme) => ({
 
 function Profile() {
 
+    let jobHuntingTypeMap = new Map();
+    jobHuntingTypeMap.set(1, "an internship");
+    jobHuntingTypeMap.set(2, "a full-time job");
+    jobHuntingTypeMap.set(3, "a part-time job");
+    jobHuntingTypeMap.set(4, "a career break");
+
     //subscript delete button action
     const [remove, setDelete] = React.useState(false);
     const handleDeleteClick = () => {
@@ -196,12 +207,106 @@ function Profile() {
 
     //edit button action
     const [open, setOpen] = React.useState(false);
+    const [firstName, setFirstName] = React.useState("");
+    const [lastName, setLastName] = React.useState("");
+    const [university, setUniversity] = React.useState("");
+    const [majorCode, setMajorCode] = React.useState(0);
+    const [major, setMajor] = React.useState("Unknown");
+    const [degreeCode, setDegreeCode] = React.useState(0);
+    const [degree, setDegree] = React.useState("Unknown");
+
+    function handleFirstNameChange(event) {
+        setFirstName(event.target.value)
+    }
+
+    function handleLastNameChange(event) {
+        setLastName(event.target.value)
+    }
+
+    function handleUniversityChange(event) {
+        setUniversity(event.target.value)
+    }
+
+    // function handleMajorChange(event) {
+    //     setMajor(event.target.value)
+    // }
+
+    function handleMajorChange(event) {
+
+        var curMajor = "Unknown";
+        var curMajorCode = event.target.value;
+        if (curMajorCode === 1) {
+            curMajor = "Computer Science"
+        } 
+        else if (curMajorCode === 2) {
+            curMajor = "Software Engineering"
+        }
+        else if (curMajorCode === 3) {
+            curMajor = "Electrical and Computer Engineering"
+        }
+        else if (curMajorCode === 4) {
+            curMajor = "Information System"
+        }
+        else if (curMajorCode === 5) {
+            curMajor = "Robotics"
+        }
+        else if (curMajorCode === 6) {
+            curMajor = "Communication Engineering"
+        }
+        else if (curMajorCode === 7) {
+            curMajor = "Data Science"
+        }
+        else {
+            curMajor = "Other"
+        }
+      
+        setMajor(curMajor)
+        setMajorCode(curMajorCode)
+    }
+
+    // function handleDegreeChange(event) {
+    //     setDegree(event.target.value)
+    // }
+
+    function handleDegreeChange(event) {
+
+        var curDegree = "Unknown";
+        var curDegreeCode = event.target.value;
+        if (curDegreeCode === 1) {
+            curDegree = "High School Diploma"
+        } 
+        else if (curDegreeCode === 2) {
+            curDegree = "College Diploma"
+        }
+        else if (curDegreeCode === 3) {
+            curDegree = "Bachelor's"
+        }
+        else if (curDegreeCode === 4) {
+            curDegree = "Master's"
+        }
+        else {
+            curDegree = "PhD"
+        }
+        setDegree(curDegree)
+        setDegreeCode(curDegreeCode)
+    }
+
     const handleClickOpen = () => {
         setOpen(true);
     };
     const handleEditClose = () => {
         setOpen(false);
     };
+    async function handleUpdateProfileBasic(event) {
+        setOpen(false);
+        var name = firstName + " " + lastName;
+        await updateProfileBasic(name, university, major, degree);
+        const res = await getProfile();
+        const data = res.data
+        setProfile(data.profile);
+        console.log("current user's profile is: ")
+        console.log(data);
+    }
 
 
     const [profile, setProfile] = React.useState({"profile": {}});
@@ -213,13 +318,13 @@ function Profile() {
             const profileData = res.data;
             setProfile(profileData.profile);
             var currJobType;
-            if (profileData.profile.jobHuntingType == "an internship") {
+            if (profileData.profile.jobHuntingType === "an internship") {
                 currJobType = 1;
             }
-            else if (profileData.profile.jobHuntingType == "a full-time job") {
+            else if (profileData.profile.jobHuntingType === "a full-time job") {
                 currJobType = 2;
             }
-            else if (profileData.profile.jobHuntingType == "a part-time job") {
+            else if (profileData.profile.jobHuntingType === "a part-time job") {
                 currJobType = 3;
             }
             else {
@@ -230,6 +335,12 @@ function Profile() {
         }
     ), [])
 
+
+
+
+
+
+    // subscription area
     const [subscriptions, setSubscriptions] = React.useState({"data": []});
 
     React.useEffect(()=> 
@@ -242,9 +353,44 @@ function Profile() {
 
 
 
-    // function handleSelectChange(event) {
-    //     setEmail(event.target.value)
-    // }
+    async function handleSelectChange(event) {
+        const res = await updateProfileJobHuntingType(jobHuntingTypeMap.get(event.target.value))
+        const data = res.data;
+        var currJobType;
+        if (data.updated_item.jobHuntingType === "an internship") {
+            currJobType = 1;
+        }
+        else if (data.updated_item.jobHuntingType === "a full-time job") {
+            currJobType = 2;
+        }
+        else if (data.updated_item.jobHuntingType === "a part-time job") {
+            currJobType = 3;
+        }
+        else {
+            currJobType = 4;
+        }
+        setJobHuntingType(currJobType);
+    }
+
+    async function handleResumeClick(event) {
+        const res = await getProfile();
+        const data = res.data;
+        const resumeUrl = data.profile.resume;
+        if (!resumeUrl) {
+            return;
+        }
+        else {
+            window.open(resumeUrl);
+        }
+    }
+
+    async function handleDeleteSubClick(event, id) {
+        console.log("the subscription id is: " + id)
+        await deleteSubscription(id);
+        const res = await getSubscriptions();
+        const data = res.data;
+        setSubscriptions(data)
+    }
 
 
 
@@ -255,7 +401,6 @@ function Profile() {
                 <Toolbar>
                     {/*<Menu className={useStyles().icon}/>*/}
                     <Typography variant="h5" color="inherit">
-                        {/*TechCareerHub*/}
                         <Link color="inherit" href="/App">
                             TechCareerHub
                         </Link>
@@ -267,11 +412,14 @@ function Profile() {
                             </Button>
                         </Grid>
                         <Grid item>
-                            {/*<Link to="/UserSignIn">*/}
                             <Button variant="contained" color="primary" href="/Profile">
                                 Profile
                             </Button>
-                            {/*</Link>*/}
+                        </Grid>
+                        <Grid item>
+                            <Button variant="contained" color="primary" href="/">
+                                Sign Out
+                            </Button>
                         </Grid>
                     </Grid>
                 </Toolbar>
@@ -289,6 +437,9 @@ function Profile() {
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             {profile.major}
+                        </Typography>
+                        <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
+                            {profile.currentDegree}
                         </Typography>
                         <Typography component="h6" variant="h5" color="textPrimary" gutterBottom>
                             {profile.email}
@@ -316,6 +467,7 @@ function Profile() {
                                     label="First Name"
                                     type="fname"
                                     fullWidth
+                                    onChange={handleFirstNameChange}
                                 />
                                 <TextField
                                     // autoFocus
@@ -324,6 +476,7 @@ function Profile() {
                                     label="Last Name"
                                     type="lname"
                                     fullWidth
+                                    onChange={handleLastNameChange}
                                 />
                                 <TextField
                                     // autoFocus
@@ -332,22 +485,62 @@ function Profile() {
                                     label="University"
                                     type="univ"
                                     fullWidth
+                                    onChange={handleUniversityChange}
                                 />
-                                <TextField
+                                {/* <TextField
                                     // autoFocus
                                     margin="dense"
                                     id="major"
                                     label="Major"
                                     type="major"
                                     fullWidth
-                                />
+                                    onChange={handleMajorChange}
+                                /> */}
+                                <FormControl className={useStyles().statusOption} variant="outlined">
+                                    {/*<StyledTableCell align="left">*/}
+                                    {/*    {row.status}*/}
+                                    {/*</StyledTableCell>*/}
+                                    <Select value={majorCode} onChange={handleMajorChange}>
+                                        <MenuItem value={0}>Please choose your Major</MenuItem>
+                                        <MenuItem value={1}>Computer Science</MenuItem>
+                                        <MenuItem value={2}>Software Engineering</MenuItem>
+                                        <MenuItem value={3}>Electrical and Computer Engineering</MenuItem>
+                                        <MenuItem value={4}>Information System</MenuItem>
+                                        <MenuItem value={5}>Robotics</MenuItem>
+                                        <MenuItem value={6}>Communication Engineering</MenuItem>
+                                        <MenuItem value={7}>Data Science</MenuItem>
+                                        <MenuItem value={8}>Other</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                {/* <TextField
+                                    // autoFocus
+                                    margin="dense"
+                                    id="degree"
+                                    label="Highest Degree"
+                                    type="degree"
+                                    fullWidth
+                                    onChange={handleDegreeChange}
+                                /> */}
+                                <FormControl className={useStyles().statusOption} variant="outlined">
+                                    {/*<StyledTableCell align="left">*/}
+                                    {/*    {row.status}*/}
+                                    {/*</StyledTableCell>*/}
+                                    <Select value={degreeCode} onChange={handleDegreeChange}>
+                                        <MenuItem value={0}>Please choose your highest degree</MenuItem>
+                                        <MenuItem value={1}>High School Diploma</MenuItem>
+                                        <MenuItem value={2}>College Diploma</MenuItem>
+                                        <MenuItem value={3}>Bachelor's</MenuItem>
+                                        <MenuItem value={4}>Master's</MenuItem>
+                                        <MenuItem value={5}>PhD</MenuItem>
+                                    </Select>
+                                </FormControl>
                             </DialogContent>
                             <br></br>
                             <DialogActions>
                                 <Button onClick={handleEditClose} color="primary">
                                     Cancel
                                 </Button>
-                                <Button onClick={handleEditClose} variant="contained" color="primary">
+                                <Button onClick={handleUpdateProfileBasic} variant="contained" color="primary">
                                     Update
                                 </Button>
                             </DialogActions>
@@ -360,7 +553,7 @@ function Profile() {
                             I am looking for
                         </Typography>
                         <FormControl className={useStyles().lookingForOptions} variant="outlined">
-                            <Select value={jobHuntingType}>
+                            <Select value={jobHuntingType} onChange={handleSelectChange}>
                                 <MenuItem value={1}>an internship</MenuItem>
                                 <MenuItem value={2}>a full-time job</MenuItem>
                                 <MenuItem value={3}>a part-time job</MenuItem>
@@ -382,7 +575,7 @@ function Profile() {
                                 {/*<div id="upload"></div>*/}
                             </Grid>
                             <Grid item >
-                                <Button variant="outlined" color="primary">
+                                <Button variant="outlined" color="primary" onClick={handleResumeClick}>
                                     View Current Resume
                                 </Button>
                                 {/*<Button className={useStyles().button}>*/}
@@ -410,7 +603,7 @@ function Profile() {
                                             Do you want to delete this subscription?
                                         </SubDialogTitle>
                                         <SubDialogContent dividers>
-                                            <Typography>test</Typography>
+                                            <Button variant="outlined" color="primary" onClick={(e) => handleDeleteSubClick(e, subscription.id)}>Yes</Button>
                                         </SubDialogContent>
                                     </Dialog>
                                 </ListItem>

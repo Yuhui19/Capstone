@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import Landing from './Landing';
 import UserSignIn from './UserSignIn'
 import UserSignUp from "./UserSignUp"
 import Applications from "./Applications";
@@ -16,7 +17,7 @@ function render() {
         <BrowserRouter>
             <React.Fragment>
                 {/*<Route exact path="/" component={App}/>*/}
-                <Route exact path="/" component={App}/>
+                <Route exact path="/" component={Landing}/>
                 <Route path="/App" component={App}/>
                 <Route path="/Applications" component={Applications}/>
                 <Route path="/Profile" component={Profile}/>

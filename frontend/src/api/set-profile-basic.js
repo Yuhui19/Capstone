@@ -1,12 +1,13 @@
 const axios = require('axios');
+const url = "https://techcareerhub.dev/api/profiles"
 
-const url = "https://techcareerhub.dev/api/users/signin"
 
-
-function signin(email, password) {
+function setProfileBasic(name, university, major, degree) {
     return axios.post(url, {
-        email: email,
-        password: password
+        name: name,
+        university: university,
+        major: major,
+        currentDegree: degree
     }, {
         withCredentials: true,
         maxRedirects: 0,
@@ -16,4 +17,4 @@ function signin(email, password) {
     })
 };
 
-export default signin;
+export default setProfileBasic;

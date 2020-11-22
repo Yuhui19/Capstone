@@ -34,7 +34,11 @@ spec:
           - path: /api/subscriptions/?(.*)
             backend:
               serviceName: subscriptions-srv
-              servicePort: 8084                                      
+              servicePort: 8084            
+          - path: /api/stat/?(.*)
+            backend:
+              serviceName: stat-srv
+              servicePort: 8085                          
         #   - path: /?(.*)
         #     backend:
         #       serviceName: frontend-srv

@@ -8,8 +8,7 @@ RUN go get -u github.com/aws/aws-sdk-go/aws
 RUN go get -u github.com/aws/aws-sdk-go/aws/session
 RUN go get -u github.com/aws/aws-sdk-go/service/dynamodb
 RUN go get -u github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute
-RUN go get -u github.com/dgrijalva/jwt-go
-RUN go get -u github.com/aws/aws-sdk-go/service/s3
-RUN go get -u github.com/aws/aws-sdk-go/service/s3/s3manager
+RUN go get -u github.com/aws/aws-sdk-go/service/dynamodb/expression
 
 CMD ["go","run","main.go"]
+

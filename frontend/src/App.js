@@ -8,6 +8,7 @@ import Button from '@material-ui/core/Button';
 import getJobs from './api/get-jobs';
 import applyJob from './api/apply-job';
 import subscribeCompany from './api/subscribe-company';
+import getStat from './api/get-stat';
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -33,6 +34,8 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import Pagination from '@material-ui/lab/Pagination';
+
 
 import UserSignIn from "./UserSignIn";
 import { Router, Route, browserHistory, IndexRoute } from 'react-router'
@@ -41,6 +44,8 @@ import {BrowserRouter} from "react-router-dom";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import {CardHeader, FormControl} from "@material-ui/core";
+import '../node_modules/react-vis/dist/style.css';
+import {XYPlot, HorizontalBarSeries, XAxis, YAxis} from 'react-vis';
 
 function Copyright() {
     return (
@@ -103,6 +108,9 @@ const useStyles = makeStyles((theme) => ({
         width: "100%",
         height: 70,
     },
+    pageButton: {
+        display: 'flex',
+    }
 }));
 
 const styles = (theme) => ({
@@ -117,6 +125,8 @@ const styles = (theme) => ({
         color: theme.palette.grey[500],
     },
 });
+
+
 
 const DialogTitle = withStyles(styles)((props) => {
     const { children, classes, onClose, ...other } = props;
@@ -147,14 +157,76 @@ const DialogActions = withStyles((theme) => ({
 
 
 
+function ApplicationStat(props) {
+    const data = props.statData;
+    if (data.universityStat == null) {
+        return <h>No Applicants for This Job Yet. Be the First One!</h>
+    }
+
+    const statusData = [
+        {x: data.statusStat.Rejected, y: "Rejected"},
+        {x: data.statusStat.Offer, y: "Offer"},
+        {x: data.statusStat.Onsite_Interview, y: "Onsite Interview"},
+        {x: data.statusStat.Phone_Interview, y: "Phone Interview"},
+        {x: data.statusStat.Online_Assessment, y: "Online Assessment"},
+        {x: data.statusStat.Applied, y: "Applied"},
+    ];
+
+    const universityData = data.universityStat.map(({university, count}) => ({x: count, y: university}))
+
+    const majorData = data.majorStat.map(({major, count}) => ({x: count, y: major}))
+
+    const degreeData = data.degreeStat.map(({degree, count}) => ({x: count, y: degree}))
+
+
+    return  <div>
+        <h>Applicants' Application Status</h>
+        <XYPlot height={300} width={500} yType="ordinal" margin={{left: 150}}>
+            <XAxis/>
+            <YAxis/>
+            <HorizontalBarSeries data={statusData} />
+        </XYPlot>
+        <h>Applicants' Unversities</h>
+        <XYPlot height={150} width={500} yType="ordinal" margin={{left: 150}}>
+            <XAxis/>
+            <YAxis/>
+            <HorizontalBarSeries data={universityData} />
+        </XYPlot>    
+        <h>Applicants' Majors</h>
+        <XYPlot height={150} width={500} yType="ordinal" margin={{left: 150}}>
+            <XAxis/>
+            <YAxis/>
+            <HorizontalBarSeries data={majorData} />
+        </XYPlot>     
+        <h>Applicants' Degrees</h>   
+        <XYPlot height={150} width={500} yType="ordinal" margin={{left: 150}}>
+            <XAxis/>
+            <YAxis/>
+            <HorizontalBarSeries data={degreeData} />
+        </XYPlot> 
+    </div>
+    
+}
+
+
+
 
 
 function CardsLayout(props) {
     const index = props.num;
     const info = props.data;
     const [open, setOpen] = React.useState(false);
-    const handleClickOpen = () => {
+    const [statData, setStatData] = React.useState({});
+    const handleClickOpen = async () => {
+
+        console.log("find stat for job id: " + info.id)
+        const res = await getStat(info.id);
+
+        // set stat data
+        const data = res.data
+        setStatData(data)
         setOpen(true);
+
     };
     const handleClose = () => {
         setOpen(false);
@@ -185,6 +257,7 @@ function CardsLayout(props) {
         await applyJob(info.id, event.target.value);
         setStatus(event.target.value)
     }
+
 
     return <Grid item xs={12} sm={6} md={4}>
         <Card className={useStyles().card}>
@@ -238,9 +311,11 @@ function CardsLayout(props) {
                                 <MenuItem value={7}>Not Applied</MenuItem>
                             </Select>
                         </FormControl>
+                        <ApplicationStat statData={statData} >
+                        </ApplicationStat>
                     </DialogContent>
                     <DialogActions>
-                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.data[index].link, '_blank')}>
+                        <Button autoFocus variant="contained" color="primary" onClick={()=>window.open(info.link, '_blank')}>
                             Apply Now!
                         </Button>
                     </DialogActions>
@@ -260,32 +335,48 @@ const App = (props) => {
         .then(res => {
             const jobs = res.data;
             setData(jobs);
+            console.log(jobs)
         }
     ), [])
 
     const [open, setOpen] = React.useState(false);
     const rows = parseInt(data.data.length / 3, 10);
+
+
+    const maxItemOnePage = 9;
+    const [page, setPage] = React.useState(1);
+    function handlePageChange(page) {
+        console.log("current page is: " + page);
+        setPage(page);
+    }
+
+
     return (
         <React.Fragment>
             <CssBaseline />
             <AppBar position="relative">
                 <Toolbar>
                     {/*<Menu className={useStyles().icon}/>*/}
-                    <Typography variant="h6" color="inherit" noWrap>
-                        {/*TechCareer Hub*/}
+                    <Typography variant="h5" color="inherit">
+                        <Link color="inherit" href="/App">
+                            TechCareerHub
+                        </Link>
                     </Typography>
                     <Grid container spacing={2} justify="flex-end">
                         <Grid item>
-                            <Button variant="contained" color="primary" href="/UserSignUp">
-                                Sign up
+                            <Button variant="contained" color="primary" href="/Applications">
+                                Application
                             </Button>
                         </Grid>
                         <Grid item>
-                            {/*<Link to="/UserSignIn">*/}
-                            <Button variant="contained" color="primary" href="/UserSignIn">
-                                Sign in
+                            <Button variant="contained" color="primary" href="/Profile">
+                                Profile
                             </Button>
-                            {/*</Link>*/}
+                        </Grid>
+                        <Grid item>
+                            <Button variant="contained" color="primary" href="/">
+                                Sign Out
+                            </Button>
                         </Grid>
                     </Grid>
                 </Toolbar>
@@ -344,24 +435,27 @@ const App = (props) => {
                     {/*    <CardsLayout num={8}/>*/}
                     {/*</Grid>*/}
 
-                    {Array.from(Array(parseInt(data.data.length / 3, 10)).keys()).map((row)=>(
+                    {Array.from(Array(parseInt((Math.min(data.data.length, maxItemOnePage * page) - (page - 1) * maxItemOnePage) / 3, 10)).keys()).map((row)=>(
                         <Grid container spacing={4} key={row.company}>
                             {/*first grid in first line*/}
-                            <CardsLayout num={row*3} data={data.data[row * 3]}/>
+                            <CardsLayout num={(page - 1) * maxItemOnePage + row * 3} data={data.data[(page - 1) * maxItemOnePage + row * 3]}/>
                             {/*second grid in first line*/}
-                            <CardsLayout num={row*3+1} data={data.data[row * 3 + 1]}/>
+                            <CardsLayout num={(page - 1) * maxItemOnePage + row * 3 + 1} data={data.data[(page - 1) * maxItemOnePage + row * 3 + 1]}/>
                             {/*third grid in first line*/}
-                            <CardsLayout num={row*3+2} data={data.data[row * 3 + 2]}/>
+                            <CardsLayout num={(page - 1) * maxItemOnePage + row * 3 + 2} data={data.data[(page - 1) * maxItemOnePage + row * 3 + 2]}/>
                         </Grid>
                     ))}
 
                     <Grid container spacing={4}>
-                        {Array.from(Array(parseInt(data.data.length % 3, 10)).keys()).map((row) =>(
+                        {Array.from(Array(parseInt((Math.min(data.data.length, maxItemOnePage * page) - (page - 1) * maxItemOnePage) % 3, 10)).keys()).map((row) =>(
                             <CardsLayout num={data.data.length - row - 1} key={row.company} data={data.data[data.data.length - row - 1]}/>
                         ))}
                     </Grid>
 
                 </Container>
+                <Grid container spacing={0} direction="column" alignItems="center" justify="center">
+                    <Pagination count={Math.ceil(data.data.length / maxItemOnePage)} variant="outlined" color="primary" page={page} onChange={(event, page) => handlePageChange(page) } className={useStyles().pageButton}/>
+                </Grid> 
             </main>
             {/* Footer */}
             <footer className={useStyles().footer}>

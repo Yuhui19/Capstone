@@ -7,6 +7,12 @@ function signup(email, password) {
     return axios.post(url, {
         email: email,
         password: password
+    }, {
+        withCredentials: true,
+        maxRedirects: 0,
+        validateStatus: function (status) {
+            return status <= 302; // Reject only if the status code is greater than 302
+        },
     })
 };
 

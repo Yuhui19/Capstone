@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import  { Redirect } from 'react-router-dom'
 import signin from './api/signin';
 import currentUser from './api/current-user';
 
@@ -54,6 +55,7 @@ export default function UserSignIn() {
 
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
+    const [redirect, setRedirect] = React.useState(false);
 
     async function handleClick(event) {
         const signRes = await signin(email, password)
@@ -64,6 +66,7 @@ export default function UserSignIn() {
         const res = await currentUser();
         const data = res.data
         console.log("current user is: " +  data.email)
+        setRedirect(true)
     }
 
     function handleEmailChange(event) {
@@ -72,6 +75,10 @@ export default function UserSignIn() {
 
     function handlePasswordChange(event) {
         setPassword(event.target.value)
+    }
+
+    if (redirect) {
+        return <Redirect to='/Profile'/>;
     }
 
     return (

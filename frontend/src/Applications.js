@@ -213,11 +213,14 @@ function Applications() {
                             </Button>
                         </Grid>
                         <Grid item>
-                            {/*<Link to="/UserSignIn">*/}
                             <Button variant="contained" color="primary" href="/Profile">
                                 Profile
                             </Button>
-                            {/*</Link>*/}
+                        </Grid>
+                        <Grid item>
+                            <Button variant="contained" color="primary" href="/">
+                                Sign Out
+                            </Button>
                         </Grid>
                     </Grid>
                 </Toolbar>

@@ -55,7 +55,15 @@ build:
       sync:
         manual:
           - src: '*.go'
-            dest: .                                           
+            dest: .    
+    - image: xiangjieli/stat
+      context: stat
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '*.go'
+            dest: .                                                          
     # - image: xiangjieli/frontend
     #   context: frontend
     #   docker:

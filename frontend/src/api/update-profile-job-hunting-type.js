@@ -1,12 +1,10 @@
 const axios = require('axios');
+const url = "https://techcareerhub.dev/api/profiles/job_hunting_type"
 
-const url = "https://techcareerhub.dev/api/users/signin"
 
-
-function signin(email, password) {
-    return axios.post(url, {
-        email: email,
-        password: password
+function updateProfileJobHuntingType(jobHuntingType) {
+    return axios.put(url, {
+        jobHuntingType: jobHuntingType
     }, {
         withCredentials: true,
         maxRedirects: 0,
@@ -16,4 +14,4 @@ function signin(email, password) {
     })
 };
 
-export default signin;
+export default updateProfileJobHuntingType;
