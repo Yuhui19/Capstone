@@ -227,8 +227,8 @@ export default function UserSignUp() {
                                 // autoComplete="major"
                             />
                         </Grid> */}
-                        <Grid>
-                            <FormControl className={classes.statusOption} variant="outlined">
+                        <Grid item xs={12}>
+                            <FormControl className={classes.statusOption} variant="outlined" fullWidth required>
                                 {/*<StyledTableCell align="left">*/}
                                 {/*    {row.status}*/}
                                 {/*</StyledTableCell>*/}
@@ -245,8 +245,8 @@ export default function UserSignUp() {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid>
-                            <FormControl className={classes.statusOption} variant="outlined">
+                        <Grid item xs={12}>
+                            <FormControl className={classes.statusOption} variant="outlined" fullWidth required>
                                 {/*<StyledTableCell align="left">*/}
                                 {/*    {row.status}*/}
                                 {/*</StyledTableCell>*/}
@@ -280,13 +280,14 @@ export default function UserSignUp() {
                                 // name="password"
                                 label="Password"
                                 onChange={handlePasswordChange}
-                                // type="password"
+                                type="password"
                                 // id="password"
                                 // autoComplete="current-password"
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <FormControlLabel
+                                required
                                 control={<Checkbox value="allowExtraEmails" color="primary" />}
                                 label="I want to receive position updates via email when I subscribe a company."
                             />

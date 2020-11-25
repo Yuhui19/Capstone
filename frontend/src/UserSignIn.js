@@ -112,7 +112,7 @@ export default function UserSignIn() {
                         // name="password"
                         label="Password"
                         onChange={handlePasswordChange}
-                        // type="password"
+                        type="password"
                         // id="password"
                         // autoComplete="current-password"
                     />

@@ -468,8 +468,9 @@ function Profile() {
                                     type="fname"
                                     fullWidth
                                     onChange={handleFirstNameChange}
+                                    defaultValue = {profile.name}
                                 />
-                                <TextField
+                                {/* <TextField
                                     // autoFocus
                                     margin="dense"
                                     id="lname"
@@ -477,15 +478,16 @@ function Profile() {
                                     type="lname"
                                     fullWidth
                                     onChange={handleLastNameChange}
-                                />
+                                /> */}
                                 <TextField
                                     // autoFocus
                                     margin="dense"
                                     id="univ"
-                                    label="University"
+                                    label= "University"
                                     type="univ"
                                     fullWidth
                                     onChange={handleUniversityChange}
+                                    defaultValue = {profile.university}
                                 />
                                 {/* <TextField
                                     // autoFocus
@@ -496,22 +498,27 @@ function Profile() {
                                     fullWidth
                                     onChange={handleMajorChange}
                                 /> */}
-                                <FormControl className={useStyles().statusOption} variant="outlined">
-                                    {/*<StyledTableCell align="left">*/}
-                                    {/*    {row.status}*/}
-                                    {/*</StyledTableCell>*/}
-                                    <Select value={majorCode} onChange={handleMajorChange}>
-                                        <MenuItem value={0}>Please choose your Major</MenuItem>
-                                        <MenuItem value={1}>Computer Science</MenuItem>
-                                        <MenuItem value={2}>Software Engineering</MenuItem>
-                                        <MenuItem value={3}>Electrical and Computer Engineering</MenuItem>
-                                        <MenuItem value={4}>Information System</MenuItem>
-                                        <MenuItem value={5}>Robotics</MenuItem>
-                                        <MenuItem value={6}>Communication Engineering</MenuItem>
-                                        <MenuItem value={7}>Data Science</MenuItem>
-                                        <MenuItem value={8}>Other</MenuItem>
-                                    </Select>
-                                </FormControl>
+                                <br></br>
+                                <br></br>
+                                <Card className={useStyles().card} fullWidth>
+                                    <FormControl className={useStyles().statusOption} variant="outlined">
+                                        {/*<StyledTableCell align="left">*/}
+                                        {/*    {row.status}*/}
+                                        {/*</StyledTableCell>*/}
+                                        <Select value={majorCode} onChange={handleMajorChange}>
+                                            <MenuItem value={0}>Please choose your Major</MenuItem>
+                                            <MenuItem value={1}>Computer Science</MenuItem>
+                                            <MenuItem value={2}>Software Engineering</MenuItem>
+                                            <MenuItem value={3}>Electrical and Computer Engineering</MenuItem>
+                                            <MenuItem value={4}>Information System</MenuItem>
+                                            <MenuItem value={5}>Robotics</MenuItem>
+                                            <MenuItem value={6}>Communication Engineering</MenuItem>
+                                            <MenuItem value={7}>Data Science</MenuItem>
+                                            <MenuItem value={8}>Other</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Card>
+                                <br></br>
                                 {/* <TextField
                                     // autoFocus
                                     margin="dense"
@@ -521,19 +528,22 @@ function Profile() {
                                     fullWidth
                                     onChange={handleDegreeChange}
                                 /> */}
-                                <FormControl className={useStyles().statusOption} variant="outlined">
-                                    {/*<StyledTableCell align="left">*/}
-                                    {/*    {row.status}*/}
-                                    {/*</StyledTableCell>*/}
-                                    <Select value={degreeCode} onChange={handleDegreeChange}>
-                                        <MenuItem value={0}>Please choose your highest degree</MenuItem>
-                                        <MenuItem value={1}>High School Diploma</MenuItem>
-                                        <MenuItem value={2}>College Diploma</MenuItem>
-                                        <MenuItem value={3}>Bachelor's</MenuItem>
-                                        <MenuItem value={4}>Master's</MenuItem>
-                                        <MenuItem value={5}>PhD</MenuItem>
-                                    </Select>
-                                </FormControl>
+                                <Card className={useStyles().card} fullWidth>
+                                    <FormControl className={useStyles().statusOption} variant="outlined">
+                                        {/*<StyledTableCell align="left">*/}
+                                        {/*    {row.status}*/}
+                                        {/*</StyledTableCell>*/}
+                                        <Select value={degreeCode} onChange={handleDegreeChange}>
+                                            <MenuItem value={0}>Please choose your highest degree</MenuItem>
+                                            <MenuItem value={1}>High School Diploma</MenuItem>
+                                            <MenuItem value={2}>College Diploma</MenuItem>
+                                            <MenuItem value={3}>Bachelor's</MenuItem>
+                                            <MenuItem value={4}>Master's</MenuItem>
+                                            <MenuItem value={5}>PhD</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Card>
+                                
                             </DialogContent>
                             <br></br>
                             <DialogActions>
