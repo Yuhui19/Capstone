@@ -18,6 +18,8 @@ import Container from '@material-ui/core/Container';
 import signup from './api/signup';
 import setProfileBasic from './api/set-profile-basic';
 import  { Redirect } from 'react-router-dom'
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
 
 
 function Copyright() {
