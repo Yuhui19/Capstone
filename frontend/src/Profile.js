@@ -207,20 +207,25 @@ function Profile() {
 
     //edit button action
     const [open, setOpen] = React.useState(false);
-    const [firstName, setFirstName] = React.useState("");
-    const [lastName, setLastName] = React.useState("");
+    // const [firstName, setFirstName] = React.useState("");
+    // const [lastName, setLastName] = React.useState("");
+    const [fullName, setFullName] = React.useState("");
     const [university, setUniversity] = React.useState("");
     const [majorCode, setMajorCode] = React.useState(0);
     const [major, setMajor] = React.useState("Unknown");
     const [degreeCode, setDegreeCode] = React.useState(0);
     const [degree, setDegree] = React.useState("Unknown");
 
-    function handleFirstNameChange(event) {
-        setFirstName(event.target.value)
-    }
+    // function handleFirstNameChange(event) {
+    //     setFirstName(event.target.value)
+    // }
 
-    function handleLastNameChange(event) {
-        setLastName(event.target.value)
+    // function handleLastNameChange(event) {
+    //     setLastName(event.target.value)
+    // }
+
+    function handleFullNameChange(event) {
+        setFullName(event.target.value);
     }
 
     function handleUniversityChange(event) {
@@ -299,13 +304,15 @@ function Profile() {
     };
     async function handleUpdateProfileBasic(event) {
         setOpen(false);
-        var name = firstName + " " + lastName;
-        await updateProfileBasic(name, university, major, degree);
+        await updateProfileBasic(fullName, university, major, degree);
         const res = await getProfile();
         const data = res.data
         setProfile(data.profile);
+        setFullName(data.profile.name);
+        setUniversity(data.profile.university);
         console.log("current user's profile is: ")
         console.log(data);
+        // window.location.reload();
     }
 
 
@@ -317,6 +324,8 @@ function Profile() {
         .then(res => {
             const profileData = res.data;
             setProfile(profileData.profile);
+            setFullName(profileData.profile.name);
+            setUniversity(profileData.profile.university);
             var currJobType;
             if (profileData.profile.jobHuntingType === "an internship") {
                 currJobType = 1;
@@ -332,6 +341,57 @@ function Profile() {
             }
             setJobHuntingType(currJobType);
             console.log("setting the current job type as " + currJobType);
+
+            //setMajorCode
+            var currMajor = profileData.profile.major;
+            var currMajorCode;
+            if (currMajor === "Computer Science") {
+                currMajorCode = 1;
+            } 
+            else if (currMajor === "Software Engineering") {
+                currMajorCode = 2;
+            }
+            else if (currMajor === "Electrical and Computer Engineering") {
+                currMajorCode = 3;
+            }
+            else if (currMajor === "Information System") {
+                currMajorCode = 4;
+            }
+            else if (currMajor === "Robotics") {
+                currMajorCode = 5;
+            }
+            else if (currMajor === "Communication Engineering") {
+                currMajorCode = 6;
+            }
+            else if (currMajor === "Data Science") {
+                currMajorCode = 7;
+            }
+            else {
+                currMajorCode = 8;
+            }
+            setMajor(currMajor)
+            setMajorCode(currMajorCode)
+
+            //setDegreeCode
+            var curDegree = profileData.profile.currentDegree;
+            var curDegreeCode;
+            if (curDegree === "High School Diploma") {
+                curDegreeCode = 1;
+            } 
+            else if (curDegree === "College Diploma") {
+                curDegreeCode = 2;
+            }
+            else if (curDegree === "Bachelor's") {
+                curDegreeCode = 3;
+            }
+            else if (curDegree === "Master's") {
+                curDegreeCode = 4;
+            }
+            else {
+                curDegreeCode = 5
+            }
+            setDegree(curDegree)
+            setDegreeCode(curDegreeCode)
         }
     ), [])
 
@@ -463,11 +523,11 @@ function Profile() {
                                 <TextField
                                     // autoFocus
                                     margin="dense"
-                                    id="fname"
-                                    label="First Name"
-                                    type="fname"
+                                    id="name"
+                                    label="Name"
+                                    type="name"
                                     fullWidth
-                                    onChange={handleFirstNameChange}
+                                    onChange={handleFullNameChange}
                                     defaultValue = {profile.name}
                                 />
                                 {/* <TextField
