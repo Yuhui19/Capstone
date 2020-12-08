@@ -15,10 +15,10 @@ function currentUser() {
 
     return axios.get(url, {
         withCredentials: true,
-        maxRedirects: 0,
-        validateStatus: function (status) {
-            return status <= 302; // Reject only if the status code is greater than 302
-        },
+        // maxRedirects: 0,
+        // validateStatus: function (status) {
+        //     return status <= 302; // Reject only if the status code is greater than 302
+        // },
         // headers: {'Cookie': 'token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InhpYW5namllbGkxOTk3QGdtYWlsLmNvbSIsImV4cCI6MTYwNDYxODY1MX0.pqSB-hA7Ly-uYeJU-2d8a9rjX3D5Cb4vt4EVPwkPUbg'},
     })
 };

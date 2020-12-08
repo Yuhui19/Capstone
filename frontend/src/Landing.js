@@ -55,6 +55,9 @@ import LaptopMacIcon from '@material-ui/icons/LaptopMac';
 import HotelIcon from '@material-ui/icons/Hotel';
 import RepeatIcon from '@material-ui/icons/Repeat';
 import Paper from '@material-ui/core/Paper';
+import currentUser from './api/current-user';
+import  { Redirect } from 'react-router-dom'
+
 
 
 function Copyright() {
@@ -146,7 +149,30 @@ const styles = (theme) => ({
 
 
 const Landing = (props) => {
-    // const classes = useStyles();
+    const classes = useStyles();
+
+    const [redirect, setRedirect] = React.useState(false);
+
+
+    // React.useEffect(()=> 
+    //     currentUser()
+    //     .then(res => {
+    //         history.push("/App", [])
+    //     }
+    // ), [])
+
+    
+
+    React.useEffect(() => {
+        (async () => {
+            await currentUser();
+            setRedirect(true);
+        })();
+    }, []);
+
+    if (redirect) {
+        return <Redirect to='/App'/>;
+    }
 
 
 
@@ -175,7 +201,7 @@ const Landing = (props) => {
             </AppBar>
             <main>
                 {/* Hero unit */}
-                <div className={useStyles().heroContent}>
+                <div className={classes.heroContent}>
                     <Container maxWidth="sm">
                         <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
                             TechCareer Hub
@@ -183,7 +209,7 @@ const Landing = (props) => {
                         <Typography variant="h5" align="center" color="textSecondary" paragraph>
                             All opportunities for you to start your career.
                         </Typography>
-                        <div className={useStyles().heroButtons}>
+                        <div className={classes.heroButtons}>
                             <Grid container spacing={2} justify="center">
                                 <Grid item>
                                     <Button variant="contained" color="primary" href="/UserSignUp">
@@ -215,7 +241,7 @@ const Landing = (props) => {
                                 <TimelineConnector />
                                 </TimelineSeparator>
                                 <TimelineContent>
-                                <Paper elevation={3} className={useStyles().paper}>
+                                <Paper elevation={3} className={classes.paper}>
                                     <Typography variant="h6" component="h1">
                                     Get Up and Eat
                                     </Typography>
@@ -236,7 +262,7 @@ const Landing = (props) => {
                                 <TimelineConnector />
                                 </TimelineSeparator>
                                 <TimelineContent>
-                                <Paper elevation={3} className={useStyles().paper}>
+                                <Paper elevation={3} className={classes.paper}>
                                     <Typography variant="h6" component="h1">
                                     Code
                                     </Typography>
@@ -249,10 +275,10 @@ const Landing = (props) => {
                                 <TimelineDot color="primary" variant="outlined">
                                     <HotelIcon />
                                 </TimelineDot>
-                                <TimelineConnector className={useStyles().secondaryTail} />
+                                <TimelineConnector className={classes.secondaryTail} />
                                 </TimelineSeparator>
                                 <TimelineContent>
-                                <Paper elevation={3} className={useStyles().paper}>
+                                <Paper elevation={3} className={classes.paper}>
                                     <Typography variant="h6" component="h1">
                                     Sleep
                                     </Typography>
@@ -267,7 +293,7 @@ const Landing = (props) => {
                                 </TimelineDot>
                                 </TimelineSeparator>
                                 <TimelineContent>
-                                <Paper elevation={3} className={useStyles().paper}>
+                                <Paper elevation={3} className={classes.paper}>
                                     <Typography variant="h6" component="h1">
                                     Repeat
                                     </Typography>
@@ -282,7 +308,7 @@ const Landing = (props) => {
                 </div>
             </main>
             {/* Footer */}
-            <footer className={useStyles().footer}>
+            <footer className={classes.footer}>
                 {/*<Typography variant="h6" align="center" gutterBottom>*/}
                 {/*    Footer*/}
                 {/*</Typography>*/}
@@ -294,6 +320,7 @@ const Landing = (props) => {
             {/* End footer */}
         </React.Fragment>
     );
+
 }
 
 

@@ -55,6 +55,7 @@ import updateProfileBasic from './api/update-profile-basic'
 import updateProfileJobHuntingType from './api/update-profile-job-hunting-type'
 import updateProfileResume from './api/update-profile-resume'
 import deleteSubscription from './api/delete-subscription'
+import  { Redirect } from 'react-router-dom'
 
 function Copyright() {
     return (

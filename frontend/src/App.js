@@ -9,6 +9,7 @@ import getJobs from './api/get-jobs';
 import applyJob from './api/apply-job';
 import subscribeCompany from './api/subscribe-company';
 import getStat from './api/get-stat';
+import signout from './api/signout'
 
 import AppBar from '@material-ui/core/AppBar';
 import CameraIcon from '@material-ui/icons/PhotoCamera';
@@ -23,7 +24,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Link from '@material-ui/core/Link';
-import {Menu} from "@material-ui/icons";
+import {Menu, TrainRounded} from "@material-ui/icons";
 
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -46,6 +47,9 @@ import MenuItem from "@material-ui/core/MenuItem";
 import {CardHeader, FormControl} from "@material-ui/core";
 import '../node_modules/react-vis/dist/style.css';
 import {XYPlot, HorizontalBarSeries, XAxis, YAxis} from 'react-vis';
+import  { Redirect } from 'react-router-dom'
+import { useHistory } from "react-router-dom";
+
 
 function Copyright() {
     return (
@@ -326,9 +330,10 @@ function CardsLayout(props) {
 }
 
 const App = (props) => {
-    // const classes = useStyles();
+    const classes = useStyles();
 
     const [data, setData] = React.useState({"data": []});
+   
 
     React.useEffect(()=> 
         getJobs()
@@ -338,6 +343,8 @@ const App = (props) => {
             console.log(jobs)
         }
     ), [])
+
+    
 
     const [open, setOpen] = React.useState(false);
     const rows = parseInt(data.data.length / 3, 10);
@@ -349,6 +356,9 @@ const App = (props) => {
         console.log("current page is: " + page);
         setPage(page);
     }
+
+
+
 
 
     return (
@@ -383,7 +393,7 @@ const App = (props) => {
             </AppBar>
             <main>
                 {/* Hero unit */}
-                <div className={useStyles().heroContent}>
+                <div className={classes.heroContent}>
                     <Container maxWidth="sm">
                         <Typography component="h1" variant="h2" align="center" color="textPrimary" gutterBottom>
                             TechCareer Hub
@@ -391,7 +401,7 @@ const App = (props) => {
                         <Typography variant="h5" align="center" color="textSecondary" paragraph>
                             All opportunities for you to start your career.
                         </Typography>
-                        <div className={useStyles().heroButtons}>
+                        <div className={classes.heroButtons}>
                             <Grid container spacing={2} justify="center">
                                 <Grid item>
                                     <Button variant="contained" color="primary">
@@ -408,7 +418,7 @@ const App = (props) => {
                     </Container>
                 </div>
                 {/* End hero unit */}
-                <Container className={useStyles().cardGrid} maxWidth="md">
+                <Container className={classes.cardGrid} maxWidth="md">
 
                     {/*first line of grid*/}
                     {/*<Grid container spacing={4}>*/}
@@ -454,11 +464,11 @@ const App = (props) => {
 
                 </Container>
                 <Grid container spacing={0} direction="column" alignItems="center" justify="center">
-                    <Pagination count={Math.ceil(data.data.length / maxItemOnePage)} variant="outlined" color="primary" page={page} onChange={(event, page) => handlePageChange(page) } className={useStyles().pageButton}/>
+                    <Pagination count={Math.ceil(data.data.length / maxItemOnePage)} variant="outlined" color="primary" page={page} onChange={(event, page) => handlePageChange(page) } className={classes.pageButton}/>
                 </Grid> 
             </main>
             {/* Footer */}
-            <footer className={useStyles().footer}>
+            <footer className={classes.footer}>
                 {/*<Typography variant="h6" align="center" gutterBottom>*/}
                 {/*    Footer*/}
                 {/*</Typography>*/}
@@ -470,6 +480,9 @@ const App = (props) => {
             {/* End footer */}
         </React.Fragment>
     );
+
+    
+
 }
 
 App.defaultProps = async () => {

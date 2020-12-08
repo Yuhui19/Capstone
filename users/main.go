@@ -236,7 +236,18 @@ func main() {
 
 
 	router.POST("/api/users/signout", func(c *gin.Context) {
-		c.SetCookie("token", "", 0, "/", "techcareerhub.dev", false, false)
+		// c.SetCookie("token", "", 0, "/", "techcareerhub.dev", false, false)
+		expirationTime := time.Now().Add(5 * time.Minute)
+		http.SetCookie(c.Writer,&http.Cookie{
+			Name:       "token",  //Your cookie's name
+			Value:      "",  //cookie value
+			Path:       "/",
+			Domain:     "techcareerhub.dev",
+			MaxAge:     int(expirationTime.Unix() * 1000),
+			Secure:     true,
+			HttpOnly:   false,
+			SameSite:   4,    // samesite = none
+		})
 		c.JSON(http.StatusOK, gin.H{
 			"result": "you have logged out!",
 		})

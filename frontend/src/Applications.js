@@ -42,6 +42,7 @@ import {FormControl} from "@material-ui/core";
 import getProfile from './api/get-profile';
 import getApplications from './api/get-applications';
 import setApplicationStatus from './api/set-application-status';
+import  { Redirect } from 'react-router-dom'
 
 
 function Copyright() {
