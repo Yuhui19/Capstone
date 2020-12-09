@@ -99,6 +99,95 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+
+
+func jobScraperListener(svc *dynamodb.DynamoDB, p *kafka.Producer) {
+	// kafka consumer client
+	c, err := kafka.NewConsumer(&kafka.ConfigMap{
+		"bootstrap.servers": "kaf1-srv",
+		"group.id":          "myGroup",
+		"auto.offset.reset": "earliest",
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	c.SubscribeTopics([]string{"test-topic", "^aRegex.*[Tt]opic"}, nil)
+
+
+	for {
+		msg, err := c.ReadMessage(-1)
+		if err == nil {
+			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+			
+			// get scrape result 
+			var items []Item
+			var scrapeResult ScrapeResult
+			json.Unmarshal(msg.Value, &scrapeResult)
+			// fmt.Println(scrapeResult)
+			items = scrapeResult.Data
+
+			// put items to jobs database table
+				// Add each item to Movies table:
+			tableName := "Jobs"
+
+			for i,_ := range items {
+				uid := uuid.Must(uuid.NewV4())
+				items[i].Id = uid.String()
+				// fmt.Println(item)
+				av, err := dynamodbattribute.MarshalMap(items[i])
+				if err != nil {
+					fmt.Println("Got error marshalling map:")
+					fmt.Println(err.Error())
+					os.Exit(1)
+				}
+
+				// Create item in table Jobs
+				input := &dynamodb.PutItemInput{
+					Item:      av,
+					TableName: aws.String(tableName),
+				}
+
+				_, err = svc.PutItem(input)
+				if err != nil {
+					fmt.Println("Got error calling PutItem:")
+					fmt.Println(err.Error())
+					os.Exit(1)
+				}
+
+				fmt.Println("Successfully added job to database")
+
+				// send a message to subscriptions service
+				// the topic should be "job-created"
+				topic := "job-created"
+				bytes, err := json.Marshal(items[i])
+				if err != nil {
+					fmt.Println(err)
+				}
+				p.Produce(&kafka.Message{
+					TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+					Value:          bytes,
+				}, nil)
+
+				// Wait for message deliveries before shutting down
+				p.Flush(15 * 1000)
+				fmt.Println("send message to subscription service: " + string(bytes))
+
+			
+			}
+
+		} else {
+			// The client will automatically try to recover from all errors.
+			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+		}
+	}
+
+}
+
+
+
+
 func main() {
 
 	// ===================================================
@@ -123,6 +212,8 @@ func main() {
 		fmt.Printf("Failed to create producer: %s\n", err)
 		os.Exit(1)
 	}
+
+	go jobScraperListener(svc, p)
 
 
 	//===========================================

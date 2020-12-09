@@ -39,7 +39,7 @@ spec:
             backend:
               serviceName: stat-srv
               servicePort: 8085                          
-        #   - path: /?(.*)
-        #     backend:
-        #       serviceName: frontend-srv
-        #       servicePort: 3000
+          # - path: /landing/?(.*)
+          #   backend:
+          #     serviceName: frontend-srv
+          #     servicePort: 3000
