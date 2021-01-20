@@ -218,7 +218,7 @@ func main() {
 
 	//===========================================
 
-	//run the router
+	//run the router hahah
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 	router.GET("/api/jobs", func(c *gin.Context) {
